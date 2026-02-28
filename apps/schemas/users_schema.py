@@ -20,6 +20,7 @@ class UserCreate(UserBase):
 class UserRespons(BaseModel):
     id: UUID
     email: EmailStr
+    
     created_at: datetime
     
     model_config = {
