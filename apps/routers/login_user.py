@@ -30,7 +30,7 @@ def login_user_access_token(
         )
     
     access_token = users_oauth.create_access_token(
-        data = {"user_id": user.id},
+        data = {"user_id": user.id, "role": user.role},
         expires_delta=timedelta(minutes=users_oauth.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 

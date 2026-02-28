@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
-from typing import Dict, Any
+from typing import Dict, Any, Annotated
 from sqlalchemy.orm import Session
 
 from apps.ai.app.models import ContactInformation, EducationEntry, WorkExperienceEntry
@@ -8,9 +8,9 @@ from ..ai.app.generator import generate_cv_from_data, CVGenerationResult, CVCont
 from ..ai.app.llm_client import extract_text_from_pdf_bytes
 from ..authentication.users_oauth import get_current_user
 from ..database import get_db
-from ..models.users_model import User
+from ..models.users_model import User, UserPlan
 from ..models.cv_model import CV, CVForm, CoverLetter
-from ..schemas.cv_schema import CVEvaluationResponse, CVGenerateRequest, CoverLetterRequest, CVFormData
+from ..schemas.cv_schema import CVEvaluationResponse, CVGenerateRequest, CoverLetterRequest, CVFormData, CVGenerateResponse
 from ..utils.file_storage import save_uploaded_file, save_bytes_file, get_file_url
 
 import os
@@ -18,11 +18,11 @@ import os
 
 router = APIRouter(
     prefix="/cv",
-    tags=["CV"])
+    tags=["CV Management"])
 
 
-@router.post("/evaluate", response_model=CVEvaluationResponse)
-async def evaluate_cv(
+@router.post("/upload_and_evaluate", response_model=CVEvaluationResponse)
+async def upload_and_evaluate_cv(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -32,13 +32,20 @@ async def evaluate_cv(
     work only essential plan
     """
 
-    if current_user.plan != "essential":
+    if current_user.plan != UserPlan.ESSENTIAL:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This feature is only available for Essential plan users."
         )
     
-    file_path = save_uploaded_file(file, "cv", str(current_user.id))
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are allowed"
+        )
+    
+    file_path = save_uploaded_file(file, folder="cv", user_id=str(current_user.id))
+
 
     if not os.path.exists(file_path):
         raise HTTPException(
@@ -52,6 +59,7 @@ async def evaluate_cv(
 
         raw_text = extract_text_from_pdf_bytes(pdf_bytes)
         metadata = analyze_cv_metadata(raw_text, page_count=1)
+
         cv_data: Dict[str, Any] = {"raw_text": raw_text}
 
         result: GradingResult = grade_cv(cv_data, metadata)
@@ -59,15 +67,36 @@ async def evaluate_cv(
 
         db_cv = CV(
             user_id=current_user.id,
+            title=file.filename or "Uploaded CV",
             file_path=file_path,
+            file_type="pdf",
             score=result.score,
-            tips=result.tips
+            tips=result.tips,
+            is_favorite=False
         )
         db.add(db_cv)
         db.commit()
         db.refresh(db_cv)
 
+        formatted["message"] = formatted.get(
+            "message",
+            "CV evaluated successfully."
+        )
+
+        if formatted.get("tips"):
+            formatted["tips"] = [
+                {
+                    "category": "Improvement",
+                    "message": tip,
+                    "priority": 2  
+                } 
+                if isinstance(tip, str)
+                else tip
+                for tip in formatted["tips"]
+            ]
+
         return CVEvaluationResponse(**formatted)
+    
 
     except Exception as e:
         import traceback
@@ -80,20 +109,23 @@ async def evaluate_cv(
     
 
 
-@router.post("/generate", response_model=Dict[str, str])
+@router.post("/generate", response_model=CVGenerateResponse)
 async def generate_optimized_cv(
-    request: CVGenerateRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    form_data: CVContent,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)]
 ):
     
-    allowed_plans = ["starter", "premium", "ultimate"]
+    allowed_plans = [UserPlan.STARTER, UserPlan.PREMIUM, UserPlan.ULTIMATE]
     if current_user.plan not in allowed_plans:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"CV generation requires one of these plans: {', '.join(allowed_plans)}. Please upgrade."
         )
 
+# ei porjonto complet hoice, next din akhan thake suru korte hobe 
+# ===================================================================================================
+# ===================================================================================================
     # -------------------------------------------------------------------------
     # 1️⃣ Save submitted form data
     # -------------------------------------------------------------------------

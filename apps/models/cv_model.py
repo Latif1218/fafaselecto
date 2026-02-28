@@ -51,7 +51,7 @@ class CoverLetter(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    cv_id = Column(UUID(as_uuid=True), ForeignKey("cvs.id"), nullable=True)
+    cv_id = Column(UUID(as_uuid=True), ForeignKey("cv.id"), nullable=True)
     title = Column(String(150), nullable=True)
     content = Column(String, nullable=False)
     file_path = Column(String(500), nullable=True)

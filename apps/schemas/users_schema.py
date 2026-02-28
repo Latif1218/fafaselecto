@@ -27,7 +27,7 @@ class UserUpdate(BaseModel):
 
 
 
-class UserRespons(BaseModel):
+class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
     role: UserRole
@@ -67,13 +67,13 @@ class UserMini(BaseModel):
 
 
 
-class UserWithStats(UserRespons):
+class UserWithStats(UserResponse):
     average_cv_score: Optional[float] = None
     total_downloads: Optional[int] = None
 
 
 
-    
+
 
 # ===========================================================================
 class TokenData(BaseModel):
