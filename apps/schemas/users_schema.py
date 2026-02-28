@@ -1,33 +1,81 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
+from enum import Enum
+from ..models.users_model import UserRole, UserPlan, UserStatus
 
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
-    role: str = "user"
-    plan: str = "essential"
-    status: str = "active"
+    role: UserRole = UserRole.USER
+    plan: UserPlan = UserPlan.ESSENTIAL
+    status: UserStatus = UserStatus.ACTIVE
     
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8, description="Minimum 8 characters")
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    plan: Optional[UserPlan] = None
+    role: Optional[UserRole] = None
+    status: Optional[UserStatus] = None
+
 
 
 class UserRespons(BaseModel):
     id: UUID
     email: EmailStr
-    
+    role: UserRole
+    plan: UserPlan
+    status: UserStatus
+    cv_count: int
+    last_activity: Optional[datetime]
     created_at: datetime
+    updated_at: Optional[datetime]
+
     
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,
+        "json_schema_extra": {
+            "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "email": "user@example.com",
+                "role": "user",
+                "plan": "premium",
+                "cv_count": 7,
+                "created_at": "2024-01-01T12:00:00Z"
+            }
+        }
     } 
 
 
+
+class UserMini(BaseModel):
+    id: UUID
+    email: EmailStr
+    full_name: Optional[str]
+    plan: UserPlan
+
+    model_config = {
+        "from_attributes": True    
+    }
+
+
+
+class UserWithStats(UserRespons):
+    average_cv_score: Optional[float] = None
+    total_downloads: Optional[int] = None
+
+
+
+    
+
+# ===========================================================================
 class TokenData(BaseModel):
     id : Optional[UUID] = None
     
@@ -43,11 +91,7 @@ class UserToken(BaseModel):
 
 
 
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    plan: Optional[str] = None
-    role: Optional[str] = None
-    status: Optional[str] = None
+
 
 
 class UserAdminListItem(BaseModel):
