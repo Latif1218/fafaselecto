@@ -3,8 +3,10 @@ import shutil
 from fastapi import UploadFile
 from typing import BinaryIO
 from uuid import uuid4
+from pathlib import Path
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 UPLOAD_BASE = "uploads"
 
@@ -54,3 +56,28 @@ def get_file_url(rel_path: str) -> str:
     # Local dev: http://localhost:8000/uploads/...
     # Production: https://yourdomain.com/uploads/... (Nginx/Static serve)
     return f"/{UPLOAD_BASE}/{rel_path}"
+
+
+
+
+def delete_file(relative_path: str) -> bool:
+    """
+    DB-তে সেভ করা relative path থেকে ফাইল ডিলিট করে
+    Returns: True if deleted successfully, False otherwise
+    """
+    if not relative_path:
+        return False
+
+    full_path = Path("uploads") / relative_path.lstrip("/")
+
+    if full_path.exists():
+        try:
+            full_path.unlink()
+            logger.info(f"File deleted: {relative_path}")
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to delete file {relative_path}: {str(e)}")
+            return False
+    else:
+        logger.warning(f"File not found for deletion: {relative_path}")
+        return False
