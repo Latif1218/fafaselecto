@@ -40,6 +40,7 @@ class CVForm(Base):
     last_updated_step = Column(String(50), nullable=True)
     is_completed = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow, nullable=True)
 
     user = relationship("User", back_populates="cv_forms")
 

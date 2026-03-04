@@ -79,7 +79,7 @@ class CVFormFull(BaseModel):
 class CVFormResponse(BaseModel):
     id: UUID
     last_updated_step: Optional[str] 
-    is_complete: bool
+    is_completed: bool
     created_at: datetime
     updated_at: Optional[datetime]
 
