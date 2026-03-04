@@ -313,3 +313,32 @@ Return the enhanced data in the same JSON structure."""
 
     except Exception as e:
         raise ValueError(f"Failed to enhance section: {str(e)}")
+
+
+
+
+async def generate_completion(
+    messages: list,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
+    max_tokens: int = 1000,
+    top_p: float = 1.0,
+) -> str:
+    """
+    Generic LLM completion helper.
+    Used for cover letter, custom prompts, etc.
+    Returns raw text response.
+    """
+    try:
+        response = openai.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        raise ValueError(f"LLM completion failed: {str(e)}")

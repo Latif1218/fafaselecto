@@ -30,6 +30,16 @@ class UltimateRequest(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, onupdate=datetime.utcnow, nullable=True)
 
-    user = relationship("User", foreign_keys=[user_id], back_populates="ultimate_requests")
+    user = relationship(
+        "User",
+        foreign_keys=[user_id],
+        back_populates="ultimate_requests"
+    )
+
+    tutor = relationship(
+        "User",
+        foreign_keys=[tutor_id],
+        back_populates="assigned_reviews"
+    )
+
     cv = relationship("CV", back_populates="ultimate_requests")
-    tutor = relationship("Tutor", back_populates="requests")
