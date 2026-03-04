@@ -50,3 +50,5 @@ class User(Base):
     cvs = relationship("CV", back_populates="user", cascade="all, delete")
     cv_forms = relationship("CVForm", back_populates="user", cascade="all, delete")
     cover_letters = relationship("CoverLetter", back_populates="user", cascade="all, delete")
+    ultimate_requests = relationship("UltimateRequest", foreign_keys="[UltimateRequest.user_id]", back_populates="user")
+    assigned_reviews = relationship("UltimateRequest", foreign_keys="[UltimateRequest.tutor_id]", back_populates="tutor")

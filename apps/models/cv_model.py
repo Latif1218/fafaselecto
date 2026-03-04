@@ -23,6 +23,7 @@ class CV(Base):
     updated_at = Column(DateTime, onupdate=datetime.utcnow, nullable=True)
 
     user = relationship("User", back_populates="cvs")
+    ultimate_requests = relationship("UltimateRequest", back_populates="cv")
 
 
 
