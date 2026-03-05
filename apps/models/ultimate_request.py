@@ -22,9 +22,9 @@ class UltimateRequest(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     cv_id = Column(UUID(as_uuid=True), ForeignKey("cv.id"), nullable=False, index=True)
-    tutor_id = Column(UUID(as_uuid=True), ForeignKey("tutors.id"), nullable=True)
     job_description = Column(String(2000), nullable=True)
     status = Column(Enum(ReviewStatus), default=ReviewStatus.PENDING, nullable=False)
+    assigned_tutor_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     deadline = Column(DateTime, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -35,11 +35,10 @@ class UltimateRequest(Base):
         foreign_keys=[user_id],
         back_populates="ultimate_requests"
     )
-
     tutor = relationship(
         "User",
-        foreign_keys=[tutor_id],
-        back_populates="assigned_reviews"
+        foreign_keys=[assigned_tutor_id],
+        back_populates="assigned_reviews"  
     )
 
     cv = relationship("CV", back_populates="ultimate_requests")

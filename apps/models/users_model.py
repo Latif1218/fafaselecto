@@ -52,11 +52,13 @@ class User(Base):
     cover_letters = relationship("CoverLetter", back_populates="user", cascade="all, delete")
     ultimate_requests = relationship(
         "UltimateRequest",
-        foreign_keys="UltimateRequest.user_id",
-        back_populates="user"
+        foreign_keys="[UltimateRequest.user_id]",
+        back_populates="user",
+        cascade="all, delete-orphan"  # optional
     )
     assigned_reviews = relationship(
         "UltimateRequest",
-        foreign_keys="UltimateRequest.tutor_id",
-        back_populates="tutor"
+        foreign_keys="[UltimateRequest.assigned_tutor_id]",
+        back_populates="tutor",
+        cascade="all, delete-orphan"  # optional
     )

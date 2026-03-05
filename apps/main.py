@@ -2,7 +2,6 @@ from fastapi import FastAPI, status, HTTPException
 from .database import Base, engine
 from .models.users_model import User
 from .models.cv_model import CV, CVForm, CoverLetter
-from .models.tutor import Tutor
 from .models.ultimate_request import UltimateRequest
 from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter
 import sys

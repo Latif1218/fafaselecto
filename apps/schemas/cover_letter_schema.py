@@ -17,7 +17,7 @@ class CoverLetterResponse(BaseModel):
     id: UUID
     cv_id: UUID
     content: str
-    file_url: Optional[str]
+    file_url: Optional[str] = None
     language: str
     created_at: datetime
 
