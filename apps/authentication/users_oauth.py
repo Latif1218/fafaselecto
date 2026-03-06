@@ -147,3 +147,16 @@ def get_current_admin_user(
             detail="Not enough permission to access all user"
         )
     return current_user
+
+
+
+
+def get_current_tutor_user(
+        current_user: Annotated[users_model.User , Depends(get_current_user)]
+) -> users_model.User:
+    if current_user.role != users_model.UserRole.TUTOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tutor access required"
+        )
+    return current_user
