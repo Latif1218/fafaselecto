@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated
 from uuid import UUID
 from datetime import datetime
 from ..database import get_db
-from ..models.users_model import User, UserRole
+from ..models.users_model import User
 from ..models.ultimate_request import UltimateRequest, ReviewStatus
 from ..models.cv_model import CV
 from..authentication.users_oauth import get_current_tutor_user
@@ -137,19 +137,19 @@ async def submit_review(
             detail="Only PDF or DOCX files allowed"
         )
     
-    file_path = await save_uploaded_file(
-        file,
-        folder="reviews",
-        user_id=str(current_tutor.id),
-        request_id=str(request_id)
-    )
+    # file_path = await save_uploaded_file(
+    #     file,
+    #     folder="reviews",
+    #     user_id=str(current_tutor.id),
+    #     request_id=str(request_id)
+    # )
 
     request.status = ReviewStatus.COMPLETED
     request.completed_at = datetime.utcnow()
     request.updated_at = datetime.utcnow()
-    request.review_file_path = file_path
-    request.review_score = review_data.score
-    request.review_comment = review_data.comment
+    # request.review_file_path = file_path
+    # request.review_score = review_data.score
+    # request.review_comment = review_data.comment
 
     db.commit()
     db.refresh(request)
