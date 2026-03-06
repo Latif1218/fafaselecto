@@ -7,11 +7,11 @@ from smtplib import SMTPException, SMTPAuthenticationError
 
 
 def generate_otp() -> str:
-    return f"{secrets.randbelow(1_000_000): 06d}"
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 def send_otp_email(to_email: str, otp: str) -> bool:
-    
+
     subject = "Your IRON READY OTP Code"
     body = f"""
     Hi,

@@ -27,10 +27,11 @@ GOOGLE_USERINFO_URL = os.getenv("GOOGLE_USERINFO_URL")
 
 STRIPE_SECRET_KEY=os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY=os.getenv("STRIPE_PUBLISHABLE_KEY")
-STRIPE_MONTHLY_PRICE_ID=os.getenv("STRIPE_MONTHLY_PRICE_ID")
-STRIPE_YEARLY_PRICE_ID=os.getenv("STRIPE_YEARLY_PRICE_ID")
+PRICE_IDS=os.getenv("PRICE_IDS")
 STRIPE_WEBHOOK_SECRET=os.getenv("STRIPE_WEBHOOK_SECRET")
 DOMAIN=os.getenv("DOMAIN")
+STRIPE_SUCCESS_URL = os.getenv("STRIPE_SUCCESS_URL", f"{DOMAIN}/payment/success")
+STRIPE_CANCEL_URL = os.getenv("STRIPE_CANCEL_URL", f"{DOMAIN}/payment/cancel")
 
 
 GROQ_API_KEY=os.getenv("GROQ_API_KEY")
@@ -43,4 +44,6 @@ groq_client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1",
 )
+
+
 
