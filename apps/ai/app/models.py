@@ -16,7 +16,7 @@ class ContactInformation(BaseModel):
 
 class EducationEntry(BaseModel):
     """Education section entry."""
-    year: Optional[str] = None  # Renamed to "date" during normalization
+    year: Optional[str] = None  
     date: Optional[str] = None
     institution: str
     location: str
@@ -28,9 +28,9 @@ class EducationEntry(BaseModel):
 
 class WorkExperienceEntry(BaseModel):
     """Work experience section entry."""
-    date: str  # Format: "Mon YYYY-Mon YYYY" or "Since Mon YYYY"
+    date: str  
     company: str
-    location: str  # Format: "City, Country"
+    location: str 
     position: str
     duration: Optional[str] = None
     bullets: List[str] = Field(default_factory=list)
@@ -41,17 +41,16 @@ class CVContent(BaseModel):
     contact_information: List[ContactInformation] = Field(default_factory=list)
     education: List[EducationEntry] = Field(default_factory=list)
     work_experience: List[WorkExperienceEntry] = Field(default_factory=list)
-    experience: List[WorkExperienceEntry] = Field(default_factory=list)  # Alias
+    experience: List[WorkExperienceEntry] = Field(default_factory=list)  
     language_skills: List[str] = Field(default_factory=list)
-    languages: List[str] = Field(default_factory=list)  # Alias
+    languages: List[str] = Field(default_factory=list) 
     it_skills: List[str] = Field(default_factory=list)
     financial_databases: List[str] = Field(default_factory=list)
-    databases: List[str] = Field(default_factory=list)  # Alias
+    databases: List[str] = Field(default_factory=list) 
     activities_interests: List[str] = Field(default_factory=list)
-    interests: List[str] = Field(default_factory=list)  # Alias
+    interests: List[str] = Field(default_factory=list) 
 
-    # Metadata
-    domain: str = "finance"  # finance, consulting, startup, government
+    domain: str = "finance" 
     summary: Optional[str] = None
     certifications: List[str] = Field(default_factory=list)
 
@@ -64,8 +63,7 @@ class CVGenerationResult(BaseModel):
     fill_percentage: float
     char_count: int
     warnings: List[str] = Field(default_factory=list)
-    warning_info: Optional[Dict] = None  # Adaptive enrichment warning (level, title, message)
-
+    warning_info: Optional[Dict] = None  
 
 class PageFillMetrics(BaseModel):
     """Page fill rate metrics for density optimization."""

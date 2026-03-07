@@ -56,11 +56,11 @@ class User(Base):
         "UltimateRequest",
         foreign_keys="[UltimateRequest.user_id]",
         back_populates="user",
-        cascade="all, delete-orphan"  # optional
+        cascade="all, delete-orphan"  
     )
     assigned_reviews = relationship(
         "UltimateRequest",
         foreign_keys="[UltimateRequest.assigned_tutor_id]",
         back_populates="tutor",
-        cascade="all, delete-orphan"  # optional
+        cascade="all, delete-orphan" 
     )
