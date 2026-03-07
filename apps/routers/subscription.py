@@ -66,21 +66,18 @@ async def create_checkout_session(
     """
     plan = req.plan.lower()
 
-    # Validate plan
     if plan not in ["starter", "premium", "ultimate"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid plan selected. Must be 'starter', 'premium' or 'ultimate'"
         )
 
-    # Ultimate must be one-time
     if plan == "ultimate" and not req.is_one_time:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Ultimate plan is one-time payment only"
         )
 
-    # Get correct price ID safely
     try:
         if plan == "ultimate":
             price_id = PRICE_IDS["ultimate"]["one_time"]
@@ -96,7 +93,6 @@ async def create_checkout_session(
         )
 
     try:
-        # Create Stripe Checkout session
         session = stripe.checkout.Session.create(
             mode=mode,
             payment_method_types=["card"],
@@ -112,13 +108,12 @@ async def create_checkout_session(
             cancel_url=STRIPE_CANCEL_URL,
         )
 
-        # Create or update subscription record
         sub = db.query(Subscription).filter(Subscription.user_id == current_user.id).first()
 
         if not sub:
             sub = Subscription(
-                id=str(uuid.uuid4()),  # নিজের UUID
-                stripe_subscription_id=session.subscription or session.id,  # Stripe ID আলাদা কলামে
+                id=str(uuid.uuid4()), 
+                stripe_subscription_id=session.subscription or session.id,  
                 user_id=current_user.id,
                 stripe_customer_id=session.customer,
                 plan_type=PlanType(plan),
@@ -129,7 +124,6 @@ async def create_checkout_session(
             )
             db.add(sub)
         else:
-            # Update existing
             sub.plan_type = PlanType(plan)
             sub.price_id = price_id
             sub.status = SubscriptionStatus.INCOMPLETE

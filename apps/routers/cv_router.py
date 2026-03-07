@@ -11,9 +11,9 @@ from ..ai.app.generator import generate_cv_from_data
 from ..authentication.users_oauth import get_current_user
 from ..database import get_db
 from ..models.users_model import User, UserPlan
-from ..models.cv_model import CV, CVForm, CoverLetter
+from ..models.cv_model import CV, CVForm
 from ..schemas.cv_schema import CVListItem, CVDetail, CVEvaluationResponse, CVGenerateResponse
-from ..schemas.cv_form_schema import CVFormFull, CVFormPartial, CVFormResponse
+from ..schemas.cv_form_schema import CVFormFull
 from ..utils.file_storage import save_uploaded_file, save_bytes_file, get_file_url, delete_file
 import logging
 import os
@@ -258,7 +258,6 @@ async def generate_optimized_cv(
     
 
 
-# all CV List + its Score + data
 @router.get("/list", response_model=List[CVListItem], status_code=status.HTTP_200_OK)
 def list_my_cvs(
     current_user: Annotated[User, Depends(get_current_user)],
@@ -297,7 +296,6 @@ def list_my_cvs(
 
 
 
-# CV Dounload and A CV show
 @router.get("/{cv_id}", response_model=CVDetail, status_code=status.HTTP_200_OK)
 def get_cv_detail(
     cv_id: UUID,
@@ -326,7 +324,6 @@ def get_cv_detail(
 
 
 
-# Delete /CV/{cv_id} -CV + file delete
 @router.delete("/{cv_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_cv(
     cv_id: UUID,

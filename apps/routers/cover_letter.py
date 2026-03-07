@@ -3,14 +3,11 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID
 import logging
-from datetime import datetime
-
 from ..database import get_db
 from ..models.users_model import User
 from ..models.cv_model import CV, CoverLetter, CVForm
 from ..schemas.cover_letter_schema import CoverLetterGenerateRequest, CoverLetterResponse
 from ..authentication.users_oauth import get_current_user
-from ..utils.file_storage import save_bytes_file, get_file_url
 from apps.ai.app.cover_letter_generator import generate_cover_letter
 
 router = APIRouter(
@@ -30,7 +27,6 @@ async def generate_cover_letter_endpoint(
     """
     Generate a personalized cover letter based on user's CV form data.
     """
-    # Check if CV exists and belongs to the user
     cv = db.query(CV).filter(
         CV.id == req.cv_id,
         CV.user_id == current_user.id
@@ -42,17 +38,16 @@ async def generate_cover_letter_endpoint(
             detail="CV not found or not owned by you."
         )
     
-    # Get latest CV form data for this user
     cv_form = db.query(CVForm).filter(
         CVForm.user_id == current_user.id
     ).first()
+
     if not cv_form:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No CV form data found for this user."
         )
-
-    # Prepare structured CV data from form
+    
     cv_data = {
         "personal_details": cv_form.personal_details or {},
         "education": cv_form.education or [],
@@ -62,7 +57,6 @@ async def generate_cover_letter_endpoint(
         "activities": cv_form.activities or []
     }
 
-    # Resolve full name with fallback
     personal_details = cv_form.personal_details or {}
     full_name = (
         personal_details.get("full_name")
@@ -71,7 +65,6 @@ async def generate_cover_letter_endpoint(
         or "Candidate"
     )
 
-    # Generate cover letter using AI
     cover_text = await generate_cover_letter(
         cv_data=cv_data,
         job_description=req.job_description,
@@ -79,7 +72,7 @@ async def generate_cover_letter_endpoint(
         user_name=full_name
     )
 
-    # Save cover letter to database
+
     cover_letter = CoverLetter(
         user_id=current_user.id,
         cv_id=req.cv_id,

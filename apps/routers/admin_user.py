@@ -1,13 +1,11 @@
 from fastapi import HTTPException, status, APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List
-from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime
 from ..database import get_db
 from ..authentication.users_oauth import get_current_admin_user
 from ..models.users_model import User, UserPlan, UserRole, UserStatus
 from ..schemas.admin_schema import UserListItem, UserListResponse, UserUpdateRequest, UserUpdateResponse, UserDeleteResponse
-from ..schemas import users_schema
 from uuid import UUID
 
 
