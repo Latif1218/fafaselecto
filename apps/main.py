@@ -19,7 +19,7 @@ def health():
     return HTTPException(
         status_code=status.HTTP_200_OK,
         detail="API is healthy and running correctly.",
-        headers={"Iron_Ready Healthcheack": "healthy"}
+        headers={"POSTULAE Healthcheack": "healthy"}
     )
 
 

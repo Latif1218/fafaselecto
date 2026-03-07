@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated
 from uuid import UUID
 from datetime import datetime
 from ..database import get_db
@@ -34,7 +34,7 @@ async def get_ultimate_requests(
 
     if search:
         search_term = f"%{search}%"
-        query = query.join(User, UltimateRequest.user_id == User.id, aliased=True)  # aliased=True
+        query = query.join(User, UltimateRequest.user_id == User.id, aliased=True)  
         query = query.filter(
             (User.email.ilike(search_term)) |
             (UltimateRequest.job_description.ilike(search_term))

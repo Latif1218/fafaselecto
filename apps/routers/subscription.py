@@ -41,7 +41,7 @@ for plan, prices in PRICE_IDS.items():
 
 @router.get("/config")
 async def get_payment_config():
-    """Frontend pricing page-এর জন্য Stripe config + plan prices."""
+    """Frontend pricing page-Stripe config + plan prices."""
     return {
         "publishableKey": os.getenv("STRIPE_PUBLISHABLE_KEY"),
         "plans": {
