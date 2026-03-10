@@ -7,6 +7,7 @@ from ..database import get_db
 from ..authentication import users_oauth
 from ..models.users_model import User
 from ..schemas import users_schema
+from ..schemas.users_schema import UserResponse
 
 
 router = APIRouter(
@@ -44,11 +45,13 @@ def login_user_access_token(
 
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
-def user_schemas(user: Annotated[User, Depends(users_oauth.get_current_user)]):
-    if user is None:
+@router.get("/me", response_model = UserResponse ,status_code=status.HTTP_200_OK)
+def user_schemas(
+    current_user: Annotated[User, Depends(users_oauth.get_current_user)]
+):
+    if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication Faild"
         )
-    return {"User": user}
+    return current_user

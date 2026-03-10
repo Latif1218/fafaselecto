@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 
-@router.get("/users", response_model=List[UserListItem])
+@router.get("/users", response_model=UserListResponse)
 def get_all_users(
     Current_admin: Annotated[User, Depends(get_current_admin_user)],
     db: Annotated[Session, Depends(get_db)],
@@ -31,7 +31,7 @@ def get_all_users(
     query = db.query(User)
 
     if search:
-        search = f"%{search}"
+        search = f"%{search}%"
         query = query.filter(
             (User.email.ilike(search)) | (User.full_name.ilike(search))
         )
@@ -48,13 +48,12 @@ def get_all_users(
     total = query.count()
     users = query.offset(skip).limit(limit).all()
 
-    return UserListResponse(
-        users=[UserListItem.from_orm(u) for u in users],
-        total=total,
-        page=(skip // limit) + 1,
-        limit=limit
-    )
-
+    return UserListResponse.model_validate({
+        "users": [UserListItem.model_validate(u) for u in users],
+        "total": total,
+        "page": (skip // limit) + 1,
+        "limit": limit
+    })
 
 
 @router.patch("/{user_id}", response_model=UserUpdateResponse)

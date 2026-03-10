@@ -26,43 +26,48 @@ async def get_my_assigned_requests(
     db: Annotated[Session, Depends(get_db)],
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    status: ReviewStatus = Query(None, description="Filter by status")
+    status: ReviewStatus | None = Query(None, description="Filter by status")
 ):
     query = db.query(UltimateRequest).filter(
         UltimateRequest.assigned_tutor_id == current_tutor.id
     )
 
-    if status:
+    # Apply status filter only if provided
+    if status is not None:
         query = query.filter(UltimateRequest.status == status)
-        total = query.count()
 
-        requests = (
-            query.join(CV, UltimateRequest.cv_id == CV.id, isouter=True).join(
-                User, UltimateRequest.user_id == User.id, isouter=True
-            ).offset(skip).limit(limit).all()
-        )
+    # Always calculate total and fetch data — outside the if
+    total = query.count()
 
-        formatted = []
-        for req in requests:
-            formatted.append(
-                TutorRequestListItem(
-                    id = req.id,
-                    user_email=req.user.email if req.user else None,
-                    cv_title=req.cv.title if req.cv else None,
-                    job_description=req.job_description,
-                    status=req.status,
-                    deadline=req.deadline,
-                    created_at=req.created_at,
-                    assigned_at=req.updated_at
-                )
+    # Join only once — better performance & clarity
+    query = query.join(CV, UltimateRequest.cv_id == CV.id, isouter=True)\
+                 .join(User, UltimateRequest.user_id == User.id, isouter=True)
+
+    requests = query.offset(skip).limit(limit).all()
+
+    formatted = []
+    for req in requests:
+        formatted.append(
+            TutorRequestListItem(
+                id=req.id,
+                user_email=req.user.email if req.user else None,
+                cv_title=req.cv.title if req.cv else None,
+                job_description=req.job_description,
+                status=req.status,
+                deadline=req.deadline,
+                created_at=req.created_at,
+                assigned_at=req.updated_at
             )
-        return TutorRequestListResponse(
-            requests=formatted,
-            total=total,
-            page=(skip // limit) + 1,
-            limit=limit
         )
-    
+
+    return TutorRequestListResponse(
+        requests=formatted,
+        total=total,
+        page=(skip // limit) + 1 if limit > 0 else 1,
+        limit=limit
+    )
+
+
 
 
 @router.get("/requests/{id}", response_model=TutorRequestDetail)

@@ -12,10 +12,12 @@ from ..schemas.ultimate_schema import UltimateRequestCreate, UltimateRequestResp
 
 from ..authentication.users_oauth import get_current_user
 
-router = APIRouter(prefix="/cv/ultimate", tags=["CV Ultimate - Human Review"])
+router = APIRouter(
+    prefix="/cv/ultimate", 
+    tags=["CV Ultimate - Human Review"]
+)
 
 logger = logging.getLogger(__name__)
-
 
 
 

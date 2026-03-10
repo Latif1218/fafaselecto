@@ -12,7 +12,10 @@ from ..schemas.cv_form_schema import CVFormPartial, CVFormFull, CVFormResponse, 
 from ..authentication.users_oauth import get_current_user
 from ..routers.cv_router import generate_optimized_cv
 
-router = APIRouter(prefix="/cv/form", tags=["CV Form (Multi-step)"])
+router = APIRouter(
+    prefix="/cv/form", 
+    tags=["CV Form (Multi-step)"]
+)
 
 logger = logging.getLogger(__name__)
 

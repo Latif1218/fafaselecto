@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
@@ -19,8 +19,9 @@ class UserListItem(BaseModel):
     created_at: datetime
     last_activity: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class UserListResponse(BaseModel):
@@ -28,6 +29,10 @@ class UserListResponse(BaseModel):
     total: int
     page: int
     limit: int
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class UserUpdateRequest(BaseModel):

@@ -9,8 +9,6 @@ from ..models.users_model import UserRole, UserPlan, UserStatus
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
-    role: UserRole = UserRole.USER
-    plan: UserPlan = UserPlan.ESSENTIAL
     status: UserStatus = UserStatus.ACTIVE
     
 
@@ -21,14 +19,15 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
-    plan: Optional[UserPlan] = None
-    role: Optional[UserRole] = None
-    status: Optional[UserStatus] = None
+    # plan: Optional[UserPlan] = None
+    # role: Optional[UserRole] = None
+    # status: Optional[UserStatus] = None
 
 
 
 class UserResponse(BaseModel):
     id: UUID
+    full_name: str
     email: EmailStr
     role: UserRole
     plan: UserPlan
