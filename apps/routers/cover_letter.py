@@ -8,7 +8,7 @@ from ..models.users_model import User
 from ..models.cv_model import CV, CoverLetter, CVForm
 from ..schemas.cover_letter_schema import CoverLetterGenerateRequest, CoverLetterResponse
 from ..authentication.users_oauth import get_current_user
-from ...apps.ai.app.cover_letter_generator import generate_cover_letter
+from apps.ai.app.cover_letter_generator import generate_cover_letter
 
 router = APIRouter(
     prefix="/cover-letter", 

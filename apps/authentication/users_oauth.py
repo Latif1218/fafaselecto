@@ -42,20 +42,18 @@ def authenticate_user(db: Session, username: str, password: str):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = {}
 
-    # ✅ সব UUID কে string এ convert করো
+    
     for key, value in data.items():
         if isinstance(value, UUID):
             to_encode[key] = str(value)
         else:
             to_encode[key] = value
 
-    # ✅ expire time সেট করো
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # datetime JSON serializable না, তাই timestamp ব্যবহার করাই safest
     to_encode.update({"exp": expire.timestamp()})
 
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

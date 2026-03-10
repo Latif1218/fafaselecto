@@ -20,12 +20,14 @@ def login_user_access_token(
     user_credentials : Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
 ):
+    """User login endpoint."""
+
     user = users_oauth.authenticate_user(db, user_credentials.username, user_credentials.password)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail = "incorrect username and password",
+            detail = "Incorrect email or password. Please check and try again.",
             headers = {"WWW-Authenticate": "Bearer"}
         )
     
