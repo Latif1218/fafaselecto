@@ -1,4 +1,5 @@
 import jwt
+import requests
 from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from fastapi import Depends, status, HTTPException
 from sqlalchemy.orm import Session
@@ -11,6 +12,7 @@ from typing import Optional, Annotated
 from datetime import datetime, timedelta, timezone
 from ..config import JWT_SECRET_KEY
 from uuid import UUID
+from ..config import GOOGLE_USERINFO_URL
 
 SECRET_KEY = JWT_SECRET_KEY
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="token")
@@ -58,6 +60,21 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+
+def get_google_user_info(access_token: str):
+    url = GOOGLE_USERINFO_URL
+    headers = {"Authorization" : f"Bearer {access_token}"}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to fatch Google user information."
+        )
+    
+    return response.json()
 
 
 
