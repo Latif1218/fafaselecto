@@ -1,10 +1,12 @@
 from fastapi import FastAPI, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from .database import Base, engine
 from .models.users_model import User
 from .models.cv_model import CV, CVForm, CoverLetter
 from .models.ultimate_request import UltimateRequest
-from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter, admin_ultimate_requests, tutor_requests, forgot_password, subscription
+from .config import SESSION_SECRET_KEY
+from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter, admin_ultimate_requests, tutor_requests, forgot_password, subscription, conte_with_google
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -17,11 +19,23 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], 
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:8000"
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key = SESSION_SECRET_KEY,
+    https_only = True,
+    same_site="lax"
+)
+
 
 @app.get('/health', status_code=status.HTTP_200_OK)
 def health():
@@ -33,6 +47,7 @@ def health():
 
 
 app.include_router(register_users.router)
+app.include_router(conte_with_google.router)
 app.include_router(login_user.router)
 app.include_router(forgot_password.router)
 app.include_router(subscription.router)

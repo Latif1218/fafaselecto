@@ -11,7 +11,7 @@ def get_google_oauth_url(state: str = None):
         "scope": "openid email profile",
         "access_type": "offline",
         "state": state or secrets.token_urlsafe(32),
-        "prompt": "select_ account consent"
+        "prompt": "select_account consent"
     }
 
     return f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
