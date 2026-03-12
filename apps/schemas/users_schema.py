@@ -27,7 +27,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     id: UUID
-    full_name: str
+    full_name: Optional[str] = None
     email: EmailStr
     role: UserRole
     plan: UserPlan

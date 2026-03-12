@@ -1,5 +1,6 @@
 from uuid import UUID
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status, Query
+from pydantic import EmailStr
+from fastapi import APIRouter, UploadFile, Form, File, Depends, HTTPException, status, Query
 from typing import Dict, Any, Annotated, List
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -31,24 +32,36 @@ logger = logging.getLogger(__name__)
 
 @router.post("/upload_and_evaluate", response_model=CVEvaluationResponse)
 async def upload_and_evaluate_cv(
+    email: EmailStr = Form(...),
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.plan != UserPlan.ESSENTIAL:
+    current_user = db.query(User).filter(User.email == email).first()
+
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found. Please register first."
+        )
+
+    if current_user.plan not in [
+        UserPlan.ESSENTIAL,
+        UserPlan.STARTER,
+        UserPlan.PREMIUM,
+        UserPlan.ULTIMATE
+    ]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="This feature is only available for Essential plan users."
+            detail="Your plan does not allow CV evaluation."
         )
-    
+
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only PDF files are allowed"
         )
-    
-    file_path = save_uploaded_file(file, folder="cv", user_id=str(current_user.id))
 
+    file_path = save_uploaded_file(file, folder="cv", user_id=str(current_user.id))
 
     if not os.path.exists(file_path):
         raise HTTPException(
@@ -77,6 +90,7 @@ async def upload_and_evaluate_cv(
             tips=result.tips,
             is_favorite=False
         )
+
         db.add(db_cv)
         db.commit()
         db.refresh(db_cv)
@@ -91,20 +105,20 @@ async def upload_and_evaluate_cv(
                 {
                     "category": "Improvement",
                     "message": tip,
-                    "priority": 2  
-                } 
+                    "priority": 2
+                }
                 if isinstance(tip, str)
                 else tip
                 for tip in formatted["tips"]
             ]
 
         return CVEvaluationResponse(**formatted)
-    
 
     except Exception as e:
         import traceback
         print("=== CV Evaluation Error ===")
         traceback.print_exc()
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while processing the CV: {str(e)}"
