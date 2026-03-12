@@ -1,6 +1,6 @@
 import jwt
 import requests
-from jwt.exceptions import ExpiredSignatureError, PyJWTError
+from jwt import ExpiredSignatureError, PyJWTError
 from fastapi import Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
