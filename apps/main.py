@@ -7,6 +7,9 @@ from .models.cv_model import CV, CVForm, CoverLetter
 from .models.ultimate_request import UltimateRequest
 from .config import SESSION_SECRET_KEY
 from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter, admin_ultimate_requests, tutor_requests, forgot_password, subscription, conte_with_google
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -16,6 +19,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+limiter = Limiter(key_func=get_remote_address)  
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

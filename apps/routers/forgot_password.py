@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 from ..authentication import users_oauth
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from ..database import get_db, get_redis
 from ..schemas import forgot_password_schema
 from ..models.users_model import User
@@ -18,8 +20,13 @@ router = APIRouter(
 )
 
 
+limiter = Limiter(key_func=lambda request: get_remote_address(request))
+
+
 @router.post("forgot_pass", status_code=status.HTTP_200_OK)
+@limiter.limit("3/hour")  # 2-3 OTP sends per hour per IP (can customize per email)
 def forget_password(
+    request: Request,
     payload: forgot_password_schema.ForgotPasswoedRequest,
     db: Annotated[Session, Depends(get_db)]
 ):
@@ -62,14 +69,16 @@ def forget_password(
     
     return {
         "status" : "success",
-        "message" : f"Password reset OTP sent to {user.email}"
+        "message" : f"Password reset OTP sent to {user.email}. It expires in 15 minutes."
     }
 
 
 
 
 @router.post("/verify_otp", status_code=status.HTTP_200_OK)
+@limiter.limit("10/5minutes")  # 5-10 attempts per code/session
 def verify_otp(
+    request: Request,
     payload: forgot_password_schema.OTPVerify,
     db: Annotated[Session, Depends(get_db)]
 ):
@@ -103,7 +112,7 @@ def verify_otp(
 
     redis_session = get_redis()
     reset_key = redis_session.get_key("password_reset: {}:{}", payload.email, payload.otp)
-    redis_session.set_with_expiry(reset_key, "verified", 600)
+    redis_session.set_with_expiry(reset_key, "verified", 600) # 10 min expiry
     
     return {
         "status" : "success",
@@ -114,7 +123,9 @@ def verify_otp(
 
 
 @router.put("update_password_without_token", status_code=status.HTTP_200_OK)
+@limiter.limit("5/5minutes")  # Prevent abuse on token-less update
 def update_password_without_token(
+    request: Request,
     payload: forgot_password_schema.PasswordUpdateWithoutToken,
     db: Annotated[Session, Depends(get_db)]
 ):
@@ -183,19 +194,20 @@ def update_password_without_token(
 @router.put("update_password", status_code=status.HTTP_200_OK)
 def update_password(
     payload: forgot_password_schema.PasswordUpdate,
-    user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)]
 ):
-    user = db.query(User).filter(
-        User.id == user.id
-    ).first()
+    hashed = hashing.hash_password(payload.new_password)
+    current_user.password = hashed
+    current_user.updated_at = datetime.utcnow()
 
-    if not user:
+    if not current_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This user does not exist"
         )
     db.commit()
+    db.refresh(current_user)
 
     return {
         "status" : "Success",

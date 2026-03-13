@@ -1,7 +1,9 @@
-from fastapi import HTTPException, status, APIRouter, Depends
+from fastapi import HTTPException, status, APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from datetime import timedelta
 from ..database import get_db
 from ..authentication import users_oauth
@@ -15,9 +17,13 @@ router = APIRouter(
     tags= ["Authentication or login"]
 )
 
+limiter = Limiter(key_func=lambda request: get_remote_address(request))
+
 
 @router.post("/token", status_code=status.HTTP_200_OK, response_model=users_schema.UserToken)
+@limiter.limit("10/minute")
 def login_user_access_token(
+    request: Request,
     user_credentials : Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
 ):
