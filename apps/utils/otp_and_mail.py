@@ -12,7 +12,7 @@ def generate_otp() -> str:
 
 def send_otp_email(to_email: str, otp: str) -> bool:
 
-    subject = "Your IRON READY OTP Code"
+    subject = "Your POSTULAE OTP Code"
     body = f"""
     Hi,
 
