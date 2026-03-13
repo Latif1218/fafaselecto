@@ -24,7 +24,7 @@ limiter = Limiter(key_func=lambda request: get_remote_address(request))
 
 
 @router.post("forgot_pass", status_code=status.HTTP_200_OK)
-@limiter.limit("3/hour")  # 2-3 OTP sends per hour per IP (can customize per email)
+@limiter.limit("3/hour")  
 def forget_password(
     request: Request,
     payload: forgot_password_schema.ForgotPasswoedRequest,
@@ -76,7 +76,7 @@ def forget_password(
 
 
 @router.post("/verify_otp", status_code=status.HTTP_200_OK)
-@limiter.limit("10/5minutes")  # 5-10 attempts per code/session
+@limiter.limit("10/5minutes") 
 def verify_otp(
     request: Request,
     payload: forgot_password_schema.OTPVerify,
@@ -112,7 +112,7 @@ def verify_otp(
 
     redis_session = get_redis()
     reset_key = redis_session.get_key("password_reset: {}:{}", payload.email, payload.otp)
-    redis_session.set_with_expiry(reset_key, "verified", 600) # 10 min expiry
+    redis_session.set_with_expiry(reset_key, "verified", 600) 
     
     return {
         "status" : "success",
@@ -123,7 +123,7 @@ def verify_otp(
 
 
 @router.put("update_password_without_token", status_code=status.HTTP_200_OK)
-@limiter.limit("5/5minutes")  # Prevent abuse on token-less update
+@limiter.limit("5/5minutes")  
 def update_password_without_token(
     request: Request,
     payload: forgot_password_schema.PasswordUpdateWithoutToken,
