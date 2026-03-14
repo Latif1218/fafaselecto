@@ -342,3 +342,39 @@ async def generate_completion(
 
     except Exception as e:
         raise ValueError(f"LLM completion failed: {str(e)}")
+    
+
+
+
+def extract_structured_cv_data(pdf_bytes: bytes) -> Dict:
+    """
+    Generate structured data form PDF using LLM(grader- exact keys)
+    """
+    try:
+        file_obj = openai.files.create(
+            file=("resume.pdf", pdf_bytes),
+            purpose="user_data",
+        )
+
+        prompt = _load_prompt("extract_structured.txt")  
+
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "file", "file": {"file_id": file_obj.id}}
+                    ]
+                }
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+
+        return json.loads(response.choices[0].message.content)
+
+    except Exception as e:
+        print(f"Structured extraction failed: {e}")
+        return {}

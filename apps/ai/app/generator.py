@@ -222,7 +222,7 @@ class CVGenerator:
         if languages is None:
             languages = ["fr", "en"]
 
-        domain = cv_content.domain
+        domain = cv_content.domain or "finance"
         input_dict = cv_content.dict()
 
         # For structured data, assume RICH content (no enrichment needed)
@@ -736,3 +736,9 @@ def generate_cv_phase2_from_pdf(
     """
     generator = CVGenerator()
     return generator.generate_from_pdf(pdf_bytes, domain, languages=["en"])
+
+
+
+
+
+

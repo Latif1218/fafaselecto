@@ -48,11 +48,9 @@ class CVGenerateResponse(BaseModel):
 
 
 
-class CVOptimizeResponse(BaseModel):
+class CVOptimizeRequest(BaseModel):
     target_language: str = Field(default="fr", description="fr or en")
     improve_level: str = Field(default="standard", description="light / standard / aggressive")
-
-
 
 
 class CVOptimizeResponse(BaseModel):

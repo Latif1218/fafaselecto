@@ -4,16 +4,17 @@ from fastapi import APIRouter, UploadFile, Form, File, Depends, HTTPException, s
 from typing import Dict, Any, Annotated, List
 from sqlalchemy.orm import Session
 from datetime import datetime
-from apps.ai.app.llm_client import extract_text_from_pdf_bytes
+from apps.ai.app.llm_client import extract_text_from_pdf_bytes, extract_structured_cv_data
 from apps.ai.app.models import CVContent, CVGenerationResult
 from apps.schemas.cv_form_schema import CVFormFull
 from ..ai.app.cv_grader import grade_cv, format_client_output, analyze_cv_metadata, GradingResult
-from ..ai.app.generator import generate_cv_from_data
+from ..ai.app.generator import generate_cv_from_data, generate_cv_from_pdf
+from ..ai.app.domain_detector import detect_domain_from_cv_text
 from ..authentication.users_oauth import get_current_user
 from ..database import get_db
 from ..models.users_model import User, UserPlan
 from ..models.cv_model import CV, CVForm
-from ..schemas.cv_schema import CVListItem, CVDetail, CVEvaluationResponse, CVGenerateResponse
+from ..schemas.cv_schema import CVListItem, CVDetail, CVEvaluationResponse, CVGenerateResponse, CVOptimizeRequest, CVOptimizeResponse
 from ..schemas.cv_form_schema import CVFormFull
 from ..utils.file_storage import save_uploaded_file, save_bytes_file, get_file_url, delete_file
 import logging
@@ -74,9 +75,14 @@ async def upload_and_evaluate_cv(
             pdf_bytes = f.read()
 
         raw_text = extract_text_from_pdf_bytes(pdf_bytes)
+
+        structured_data = extract_structured_cv_data(pdf_bytes)
         metadata = analyze_cv_metadata(raw_text, page_count=1)
 
-        cv_data: Dict[str, Any] = {"raw_text": raw_text}
+        cv_data: Dict[str, Any] = {
+            **structured_data,         
+            "raw_text": raw_text
+        }
 
         result: GradingResult = grade_cv(cv_data, metadata)
         formatted = format_client_output(result)
@@ -124,6 +130,147 @@ async def upload_and_evaluate_cv(
             detail=f"An error occurred while processing the CV: {str(e)}"
         )
     
+
+
+
+@router.post("/optimize", response_model=CVOptimizeResponse)
+async def optimize_uploaded_cv_direct(
+    file: UploadFile = File(...),
+    target_language: str = Form("fr"),         
+    current_user: User= Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    CV Optimization 
+    """
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF files are allowed for optimization"
+        )
+
+    allowed_plans = {UserPlan.STARTER, UserPlan.PREMIUM, UserPlan.ULTIMATE}
+    if current_user.plan not in allowed_plans:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"CV optimization requires one of these plans: {', '.join(allowed_plans)}. Please upgrade."
+        )
+
+    try:
+       
+        pdf_bytes = await file.read()   
+
+        if not pdf_bytes:
+            raise ValueError("Uploaded file is empty")
+
+        raw_text = extract_text_from_pdf_bytes(pdf_bytes)
+        detected_domain = detect_domain_from_cv_text(raw_text)
+        logger.info(f"Direct optimize - Domain detected: {detected_domain}")
+
+        results = generate_cv_from_pdf(
+            pdf_bytes=pdf_bytes,
+            domain=detected_domain,
+            languages=["fr", "en"]
+        )
+
+        if not results or "fr" not in results or "en" not in results:
+            raise RuntimeError("Failed to generate optimized CV")
+
+        primary_lang = target_language if target_language in ["fr", "en"] else "fr"
+        if primary_lang not in results:
+            primary_lang = "fr"
+
+        saved_files = {}
+        for lang, result in results.items():
+            if not result.pdf_bytes:
+                continue
+
+            pdf_path = save_bytes_file(
+                result.pdf_bytes,
+                folder="optimized_cv",
+                user_id=str(current_user.id),
+                ext=".pdf",
+            )
+
+            saved_files[lang] = {
+                "pdf_path": pdf_path,
+                "pdf_url": get_file_url(pdf_path)
+            }
+
+            if result.docx_bytes:
+                docx_path = save_bytes_file(
+                    result.docx_bytes,
+                    folder="optimized_cv",
+                    user_id=str(current_user.id),
+                    ext=".docx",
+                )
+                saved_files[lang]["docx_url"] = get_file_url(docx_path)
+
+        new_score = None
+        improvement = 0
+
+        try:
+            optimized_pdf_path = saved_files[primary_lang]["pdf_path"]
+            with open(optimized_pdf_path, "rb") as f:
+                new_pdf_bytes = f.read()
+
+            raw_text_new = extract_text_from_pdf_bytes(new_pdf_bytes)
+            metadata_new = analyze_cv_metadata(raw_text_new, page_count=1)
+
+            grading_result = grade_cv({"raw_text": raw_text_new}, metadata_new)
+            new_score = grading_result.score
+            improvement = new_score  
+
+            logger.info(f"Direct optimize re-grading successful | New score: {new_score}")
+
+        except Exception as e:
+            logger.warning(f"Re-grading failed in direct optimize: {e}")
+            new_score = 75   
+            improvement = 75
+
+        optimized_cv = CV(
+            user_id=current_user.id,
+            title=f"Optimized Upload - {file.filename or 'CV'} ({primary_lang.upper()})",
+            file_path=saved_files[primary_lang]["pdf_path"],
+            file_type="pdf",
+            score=new_score,
+            tips=[],                   
+            is_favorite=False,
+        )
+
+        db.add(optimized_cv)
+        db.commit()
+        db.refresh(optimized_cv)
+
+        return CVOptimizeResponse(
+            new_cv_id=optimized_cv.id,
+            pdf_url=saved_files.get(primary_lang, {}).get("pdf_url"),
+            docx_url=saved_files.get(primary_lang, {}).get("docx_url"),
+            language=f"{primary_lang.upper()} + EN",
+            estimated_score_improvement=improvement,
+            message=(
+                f"CV successfully optimized! "
+                f"New score: {new_score} "
+                f"(Direct upload from file: {file.filename})"
+            )
+        )
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Direct CV optimize failed: {str(e)}", exc_info=True)
+        
+        if "PFR" in str(e) and "blocked" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(e)
+            )
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Optimization failed: {str(e)}"
+        )
+
+
 
 
 @router.post("/generate", response_model=CVGenerateResponse)

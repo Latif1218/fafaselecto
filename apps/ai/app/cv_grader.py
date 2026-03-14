@@ -28,7 +28,7 @@ HARD_RULES = {
     "charts_graphs": {"cap": 35, "tip": "Remplace les graphiques par des chiffres concrets dans tes bullets"},
     "no_experience": {"cap": 30, "tip": "Ajoute tes expériences professionnelles, même stages ou alternances"},
     "no_dates": {"cap": 35, "tip": "Indique les dates de chaque expérience pour montrer ta progression"},
-    "mixed_languages": {"cap": 50, "tip": "Choisis une seule langue (FR ou EN) pour tout ton CV"},
+    "mixed_languages": {"cap": 85, "tip": "Choisis une seule langue (FR ou EN) pour tout ton CV"},
     "no_email": {"cap": 55, "tip": "Ajoute ton email pour que les recruteurs puissent te contacter"},
 }
 
@@ -98,7 +98,7 @@ def _score_experience(cv_data: dict, analysis: dict) -> tuple[int, list[str]]:
     # Analyse des bullets
     all_bullets = []
     for exp in experiences:
-        bullets = exp.get("responsibilities", [])
+        bullets = exp.get("responsibilities", []) or exp.get("bullets", [])
         if isinstance(bullets, list):
             all_bullets.extend(bullets)
 
@@ -554,14 +554,14 @@ def analyze_cv_metadata(raw_text: str, page_count: int = 1) -> dict:
 
     # PFR estimé (heuristique basée sur longueur)
     char_count = len(raw_text)
-    if char_count > 3500:
+    if char_count > 3200:
         pfr_estimate = 92
-    elif char_count > 2500:
-        pfr_estimate = 85
-    elif char_count > 1500:
-        pfr_estimate = 70
+    elif char_count > 2800:
+        pfr_estimate = 88
+    elif char_count > 2200:
+        pfr_estimate = 82
     else:
-        pfr_estimate = 55
+        pfr_estimate = 60
 
     return {
         "page_count": page_count,
@@ -569,7 +569,7 @@ def analyze_cv_metadata(raw_text: str, page_count: int = 1) -> dict:
         "has_colors": has_colors,
         "has_charts": has_charts,
         "has_dates": has_dates,
-        "has_photo": False,  # Nécessite analyse vision
-        "has_column_format": False,  # Nécessite analyse vision
+        "has_photo": False,
+        "has_column_format": "date" in text_lower and "position" in text_lower,  
         "mixed_languages": mixed_languages,
     }
