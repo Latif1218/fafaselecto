@@ -136,7 +136,7 @@ async def upload_and_evaluate_cv(
 @router.post("/optimize", response_model=CVOptimizeResponse)
 async def optimize_uploaded_cv_direct(
     file: UploadFile = File(...),
-    target_language: str = Form("fr"),         
+    target_language: str = Form("fr"),           # default French
     current_user: User= Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
