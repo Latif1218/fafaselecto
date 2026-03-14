@@ -45,6 +45,26 @@ class CVGenerateResponse(BaseModel):
     message: str
 
 
+
+
+
+class CVOptimizeResponse(BaseModel):
+    target_language: str = Field(default="fr", description="fr or en")
+    improve_level: str = Field(default="standard", description="light / standard / aggressive")
+
+
+
+
+class CVOptimizeResponse(BaseModel):
+    new_cv_id: UUID
+    pdf_url: str
+    docx_url: Optional[str] = None
+    language: str
+    estimated_score_improvement: int
+    message: str
+
+
+
 # ============================================================================
 
 # class CVFormData(BaseModel):
