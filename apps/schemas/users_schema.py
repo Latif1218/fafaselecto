@@ -72,7 +72,9 @@ class UserWithStats(UserResponse):
 
 
 
-
+class VerifyOTP(BaseModel):
+    email: str
+    otp: str
 
 # ===========================================================================
 class TokenData(BaseModel):

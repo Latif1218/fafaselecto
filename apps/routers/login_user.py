@@ -37,6 +37,11 @@ def login_user_access_token(
             detail = "Incorrect email or password. Please check and try again.",
             headers = {"WWW-Authenticate": "Bearer"}
         )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Email not verified. Please verify your email first."
+        )
     
     access_token = users_oauth.create_access_token(
         data = {"user_id": user.id, "role": user.role},

@@ -44,6 +44,9 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     updated_at = Column(DateTime(timezone=True), onupdate=datetime.utcnow, nullable=True)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    email_otp = Column(String(6), nullable=True)
+    otp_expires_at = Column(DateTime, nullable=True)
     
 
 
