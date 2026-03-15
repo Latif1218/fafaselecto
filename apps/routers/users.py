@@ -5,6 +5,7 @@ from typing import List, Annotated
 from ..database import get_db
 from ..models.users_model import User
 from ..models.cv_model import CV
+from ..utils.file_storage import get_file_url
 from ..schemas.users_schema import UserResponse, UserUpdate, UserWithStats
 from ..schemas.cv_schema import CVListItem
 from ..authentication.users_oauth import get_current_user
@@ -91,12 +92,13 @@ def get_my_cvs(
     sort_by: str = "created_at",
     sort_order: str = "desc"
 ):
+
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication Failed"
         )
-    
+
     query = db.query(CV).filter(CV.user_id == current_user.id)
 
     if sort_by == "score":
@@ -111,8 +113,6 @@ def get_my_cvs(
     else:
         query = query.order_by(order_column.desc())
 
-
-    total = query.count()
     cvs = query.offset(skip).limit(limit).all()
 
     if not cvs and skip > 0:
@@ -121,4 +121,19 @@ def get_my_cvs(
             detail="No more CVs found in this page"
         )
 
-    return cvs
+    cvs_response = [
+        CVListItem(
+            id=cv.id,
+            title=cv.title,
+            score=cv.score,
+            domain=cv.domain,
+            file_url=get_file_url(cv.file_path),
+            download_url=f"/cv/{cv.id}/download",
+            file_type=cv.file_type,
+            is_favorite=cv.is_favorite,
+            created_at=cv.created_at
+        )
+        for cv in cvs
+    ]
+
+    return cvs_response

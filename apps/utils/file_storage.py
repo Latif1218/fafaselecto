@@ -6,6 +6,9 @@ from uuid import uuid4
 from pathlib import Path
 import logging
 
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")  
+UPLOAD_BASE = "uploads"
+
 logger = logging.getLogger(__name__)
 
 UPLOAD_BASE = "uploads"
@@ -53,9 +56,13 @@ def save_bytes_file(content: bytes | BinaryIO, folder: str, user_id: str, ext: s
 
 
 def get_file_url(rel_path: str) -> str:
-    # Local dev: http://localhost:8000/uploads/...
-    # Production: https://yourdomain.com/uploads/... (Nginx/Static serve)
-    return f"/{UPLOAD_BASE}/{rel_path}"
+    """
+    Convert a relative file path to a URL that can be served publicly.
+    Adjust UPLOAD_BASE according to your static folder setup.
+    """
+    UPLOAD_BASE = "uploads" 
+    DOMAIN = os.getenv("APP_DOMAIN", "http://localhost:8000")
+    return f"{DOMAIN}/{UPLOAD_BASE}/{rel_path}"
 
 
 

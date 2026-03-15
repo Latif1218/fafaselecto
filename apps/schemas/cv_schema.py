@@ -20,7 +20,9 @@ class CVListItem(BaseModel):
     id: UUID
     title: Optional[str]
     score: Optional[int]
-    file_url: str
+    domain: str | None
+    file_url: Optional[str] = None
+    download_url: str
     file_type: str
     is_favorite: bool
     created_at: datetime

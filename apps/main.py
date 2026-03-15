@@ -32,7 +32,8 @@ app.add_middleware(
         "http://127.0.0.1:8000",
         "https://fafaseleto-frontend.vercel.app",
         "http://192.168.7.56:3000",
-        "https://nonprinting-featherlight-leatrice.ngrok-free.dev"
+        "https://nonprinting-featherlight-leatrice.ngrok-free.dev",
+        "http://127.0.0.1:5500",
     ], 
     allow_credentials=True,
     allow_methods=["*"],
