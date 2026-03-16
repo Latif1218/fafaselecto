@@ -7,6 +7,7 @@ from datetime import datetime
 class CoverLetterGenerateRequest(BaseModel):
     cv_id: UUID
     job_description: str
+    job_link: Optional[str] = None
     tone: Optional[str] = "professional"
     length: Optional[str] = "medium"
     language: Optional[str] = "en"
@@ -15,7 +16,10 @@ class CoverLetterGenerateRequest(BaseModel):
 
 class CoverLetterResponse(BaseModel):
     id: UUID
-    cv_id: UUID
+    cv_id: Optional[UUID] = None
+    title: Optional[str] = None
+    job_description: Optional[str] = None
+    job_link: Optional[str] = None
     content: str
     file_url: Optional[str] = None
     language: str

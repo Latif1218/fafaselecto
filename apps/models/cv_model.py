@@ -59,6 +59,8 @@ class CoverLetter(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     cv_id = Column(UUID(as_uuid=True), ForeignKey("cv.id"), nullable=True)
     title = Column(String(150), nullable=True)
+    job_description = Column(String, nullable=True)   
+    job_link = Column(String(500), nullable=True)
     content = Column(String, nullable=False)
     file_path = Column(String(500), nullable=True)
     language = Column(String(20), default="en")
