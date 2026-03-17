@@ -38,6 +38,8 @@ class User(Base):
     password = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     plan = Column(Enum(UserPlan), default=UserPlan.ESSENTIAL, nullable=False)
+    sector = Column(String(100), nullable=True)
+    short_description = Column(String(500), nullable=True)
     status = Column(Enum(UserStatus), default=UserStatus.ACTIVE, nullable=False)
     cv_count = Column(Integer, default=0)
     last_activity = Column(DateTime, nullable=True)

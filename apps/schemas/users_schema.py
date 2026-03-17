@@ -119,3 +119,27 @@ class TutorStats(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+class TutorCreate(BaseModel):
+    full_name: str
+    email: EmailStr
+    password: str = Field(..., min_length=8, description="Minimum 8 characters")
+    sector: str
+    short_description: Optional[str] = None
+
+
+
+
+class TutorResponse(BaseModel):
+    id: UUID
+    full_name: str
+    email: EmailStr
+    sector: Optional[str]
+    short_description: Optional[str]
+    role: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
