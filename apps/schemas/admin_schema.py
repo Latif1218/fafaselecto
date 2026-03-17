@@ -103,3 +103,35 @@ class ValidateResponse(BaseModel):
     request_id: UUID
     status: ReviewStatus
     message: str = "Request validated successfully"
+
+
+
+class AdminTutorStats(BaseModel):
+    id: UUID
+    full_name: Optional[str]
+    email: str
+    tasks_assigned: int
+    missions_completed: int
+    delays: int
+    average_delay_days: float
+    status: str  # Excellent / Active / Suspended
+
+    class Config:
+        from_attributes = True
+
+
+
+class UltimateRequestStats(BaseModel):
+    on_hold: int
+    under_review: int
+    completed: int
+    late: int
+
+
+
+class AdminOverviewStats(BaseModel):
+    total_users: int
+    total_paying_users: int
+    total_ultimate_requests: int
+    mrr: float
+    late_applications: int

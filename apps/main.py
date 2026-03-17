@@ -6,7 +6,7 @@ from .models.users_model import User
 from .models.cv_model import CV, CVForm, CoverLetter
 from .models.ultimate_request import UltimateRequest
 from .config import SESSION_SECRET_KEY
-from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter, admin_ultimate_requests, tutor_requests, forgot_password, subscription, conte_with_google, tutor_register
+from .routers import register_users, login_user, admin_user, cv_router, users, form_and_to_cv, cv_ultimate, cover_letter, admin_ultimate_requests, tutor_requests, forgot_password, subscription, conte_with_google, tutor_register, admin_tutor_dashboard
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -65,6 +65,7 @@ app.include_router(forgot_password.router)
 app.include_router(subscription.router)
 app.include_router(users.router)
 app.include_router(admin_user.router)
+app.include_router(admin_tutor_dashboard.router)
 app.include_router(cv_router.router)
 app.include_router(form_and_to_cv.router)
 app.include_router(cv_ultimate.router)
