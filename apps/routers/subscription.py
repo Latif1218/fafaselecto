@@ -13,6 +13,8 @@ from ..authentication.users_oauth import get_current_user
 from ..config import STRIPE_SECRET_KEY, STRIPE_SUCCESS_URL, STRIPE_CANCEL_URL, PRICE_IDS, STRIPE_WEBHOOK_SECRET
 import os
 
+stripe.api_key = STRIPE_SECRET_KEY
+
 
 router = APIRouter(
     prefix="/subscription", 

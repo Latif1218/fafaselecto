@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Annotated
 from uuid import UUID
@@ -109,10 +109,97 @@ async def get_request_detail(
 
 
 
+# @router.post("/reviews/{request_id}", response_model=ReviewSubmitResponse)
+# async def submit_review(
+#     request_id: UUID,
+#     review_data: ReviewSubmitRequest,
+#     current_tutor: Annotated[User, Depends(get_current_tutor_user)],
+#     db: Annotated[Session, Depends(get_db)],
+#     file: UploadFile = File(...)
+# ):
+#     request = db.query(UltimateRequest).filter(
+#         UltimateRequest.id == request_id,
+#         UltimateRequest.assigned_tutor_id == current_tutor.id
+#     ).first()
+
+#     if not request:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Request not found or not assigned to you"
+#         )
+    
+#     if request.status not in [ReviewStatus.ASSIGNED, ReviewStatus.IN_PROGRESS]:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Request must be assigned or in progress to submit review."
+#         )
+    
+#     allowed_extensions = {".pdf", ".docx"}
+#     ext = file.filename.lower()[-5:]
+#     if ext not in allowed_extensions:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Only PDF or DOCX files allowed"
+#         )
+    
+#     # file_path = await save_uploaded_file(
+#     #     file,
+#     #     folder="reviews",
+#     #     user_id=str(current_tutor.id),
+#     #     request_id=str(request_id)
+#     # )
+
+#     request.status = ReviewStatus.COMPLETED
+#     request.completed_at = datetime.utcnow()
+#     request.updated_at = datetime.utcnow()
+#     # request.review_file_path = file_path
+#     # request.review_score = review_data.score
+#     # request.review_comment = review_data.comment
+
+#     db.commit()
+#     db.refresh(request)
+
+#     return ReviewSubmitResponse(
+#         request_id=request.id,
+#         status=request.status
+#     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#========================= new one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @router.post("/reviews/{request_id}", response_model=ReviewSubmitResponse)
 async def submit_review(
     request_id: UUID,
-    review_data: ReviewSubmitRequest,
+    comment: Annotated[str, Form()],
+    score: Annotated[int, Form()],
     current_tutor: Annotated[User, Depends(get_current_tutor_user)],
     db: Annotated[Session, Depends(get_db)],
     file: UploadFile = File(...)
@@ -121,7 +208,6 @@ async def submit_review(
         UltimateRequest.id == request_id,
         UltimateRequest.assigned_tutor_id == current_tutor.id
     ).first()
-
     if not request:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -135,30 +221,20 @@ async def submit_review(
         )
     
     allowed_extensions = {".pdf", ".docx"}
-    ext = file.filename.lower()[-5:]
+    # ext = file.filename.lower()[-5:]
+    ext = '.' + file.filename.lower().rsplit('.', 1)[-1] if '.' in file.filename else ''
+    print("ext", ext)
     if ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only PDF or DOCX files allowed"
         )
     
-    # file_path = await save_uploaded_file(
-    #     file,
-    #     folder="reviews",
-    #     user_id=str(current_tutor.id),
-    #     request_id=str(request_id)
-    # )
-
     request.status = ReviewStatus.COMPLETED
     request.completed_at = datetime.utcnow()
     request.updated_at = datetime.utcnow()
-    # request.review_file_path = file_path
-    # request.review_score = review_data.score
-    # request.review_comment = review_data.comment
-
     db.commit()
     db.refresh(request)
-
     return ReviewSubmitResponse(
         request_id=request.id,
         status=request.status

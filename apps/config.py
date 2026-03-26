@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -28,7 +29,7 @@ SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 
 STRIPE_SECRET_KEY=os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY=os.getenv("STRIPE_PUBLISHABLE_KEY")
-PRICE_IDS=os.getenv("PRICE_IDS")
+PRICE_IDS=json.loads(os.getenv("PRICE_IDS", "{}"))
 STRIPE_WEBHOOK_SECRET=os.getenv("STRIPE_WEBHOOK_SECRET")
 DOMAIN=os.getenv("DOMAIN")
 STRIPE_SUCCESS_URL = os.getenv("STRIPE_SUCCESS_URL", f"{DOMAIN}/payment/success")

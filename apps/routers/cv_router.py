@@ -27,6 +27,13 @@ router = APIRouter(
     tags=["CV Management"]
 )
 
+
+# ← This is just a test router 
+@router.get("/test")
+def test_route():
+    """Test endpoint"""
+    return {"message": "hello test"}
+
 # -------------------------
 # Upload & Evaluate CV
 # -------------------------
@@ -308,6 +315,86 @@ def list_my_cvs(
         ) for cv in cvs
     ]
 
+@router.get("/my-cvs", response_model=List[CVListItem])
+def get_user_cvs(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all CVs belonging to the authenticated user"""
+    cvs = db.query(CV).filter(CV.user_id == current_user.id).all()
+
+    return [
+        CVListItem(
+            id=cv.id,
+            title=cv.title,
+            score=cv.score,
+            domain=cv.domain,
+            file_url=get_file_url(cv.file_path),
+            download_url=f"/cv/{cv.id}/download",
+            file_type=cv.file_type,
+            is_favorite=cv.is_favorite,
+            created_at=cv.created_at
+        ) for cv in cvs
+    ]
+
+
+# Route 1: Get all CVs for the current user
+@router.get("/my-cvs", response_model=List[CVListItem])
+def get_user_cvs(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all CVs belonging to the authenticated user"""
+    cvs = db.query(CV).filter(CV.user_id == current_user.id).all()
+    
+    # Build CVListItem objects with required fields
+    return [
+        CVListItem(
+            id=cv.id,
+            title=cv.title,
+            score=cv.score,
+            domain=cv.domain,
+            file_url=get_file_url(cv.file_path),
+            download_url=f"/cv/{cv.id}/download",  # ← Required field
+            file_type=cv.file_type,
+            is_favorite=cv.is_favorite,
+            created_at=cv.created_at
+        ) for cv in cvs
+    ]
+
+
+# Route 2: Get the user's favorite CV
+@router.get("/my-favorite", response_model=CVListItem)
+def get_user_favorite_cv(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get the user's favorite CV"""
+    favorite_cv = db.query(CV).filter(
+        CV.user_id == current_user.id,
+        CV.is_favorite == True
+    ).first()
+    
+    if not favorite_cv:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No favorite CV found"
+        )
+    
+    # Build CVListItem object with required fields
+    return CVListItem(
+        id=favorite_cv.id,
+        title=favorite_cv.title,
+        score=favorite_cv.score,
+        domain=favorite_cv.domain,
+        file_url=get_file_url(favorite_cv.file_path),
+        download_url=f"/cv/{favorite_cv.id}/download",  # ← Required field
+        file_type=favorite_cv.file_type,
+        is_favorite=favorite_cv.is_favorite,
+        created_at=favorite_cv.created_at
+    )
+
+
 
 # -------------------------
 # Get CV Detail
@@ -328,6 +415,7 @@ def get_cv_detail(cv_id: UUID, current_user: User = Depends(get_current_user), d
         tips=cv.tips if hasattr(cv, "tips") else None,
         raw_metadata=cv.raw_metadata if hasattr(cv, "raw_metadata") else None
     )
+
 
 
 # -------------------------
