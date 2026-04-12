@@ -1,3 +1,7 @@
+
+from .logger import get_logger
+logger = get_logger(__name__)
+
 """
 Content Enrichment for Postulae CV Generator.
 
@@ -34,12 +38,12 @@ import os
 
 import openai
 from dotenv import load_dotenv
-
+from apps.config import OPENAI_API_KEY
 from .models import PageFillMetrics
 
 # Load OpenAI API key
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
 
 class ContentEnricher:
@@ -256,7 +260,7 @@ Respond ONLY with the bullet point, no dash, no number."""
 
         except Exception as e:
             # If LLM call fails, return None (no enrichment for this experience)
-            print(f"Warning: Failed to generate bullet: {e}")
+            logger.error(f"Warning: Failed to generate bullet: {e}")
             return None
 
     @staticmethod

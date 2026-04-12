@@ -1,3 +1,7 @@
+
+from .logger import get_logger
+logger = get_logger(__name__)
+
 """
 LLM Client for Postulae CV Generator.
 Handles all interactions with OpenAI GPT models.
@@ -8,15 +12,15 @@ import os
 import re
 from typing import Dict, Optional
 from pathlib import Path
-from apps.config import OPENAI_API_KEY
+
 import openai
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Import bullet trimmer
 from .bullet_trimmer import trim_cv_bullets, validate_bullet_lengths
 
-# load_dotenv()
-openai.api_key = OPENAI_API_KEY
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Load prompts from files
 PROMPTS_DIR = Path(__file__).parent / "prompts"
@@ -146,21 +150,21 @@ def generate_cv_content(
 
         # TRIMMING DISABLED: PDF reference has LONG bullets (140-210 chars), not short ones!
         # The JSON with short bullets was created by truncating, not by LLM generation.
-        print("\n[BULLET TRIMMING] DISABLED - Elite PDFs use long bullets (140-210 chars)")
+        logger.info("\n[BULLET TRIMMING] DISABLED - Elite PDFs use long bullets (140-210 chars)")
         # content = trim_cv_bullets(content)
 
         # Validate bullet lengths after trimming
         stats = validate_bullet_lengths(content)
         if stats["total_bullets"] > 0:
-            print(f"\n[BULLET STATS AFTER TRIMMING]")
-            print(f"   Total bullets: {stats['total_bullets']}")
-            print(f"   Average length: {stats['avg_length']:.1f} chars")
-            print(f"   Range: {stats['min_length']}-{stats['max_length']} chars")
-            print(f"   Optimal (110-155): {stats['optimal']}/{stats['total_bullets']} ({stats['optimal']/stats['total_bullets']*100:.1f}%)")
+            logger.info(f"\n[BULLET STATS AFTER TRIMMING]")
+            logger.info(f"   Total bullets: {stats['total_bullets']}")
+            logger.info(f"   Average length: {stats['avg_length']:.1f} chars")
+            logger.info(f"   Range: {stats['min_length']}-{stats['max_length']} chars")
+            logger.info(f"   Optimal (110-155): {stats['optimal']}/{stats['total_bullets']} ({stats['optimal']/stats['total_bullets']*100:.1f}%)")
             if stats["too_long"] > 0:
-                print(f"   WARNING:  Still too long (>155): {stats['too_long']} bullets")
+                logger.warning(f"   WARNING:  Still too long (>155): {stats['too_long']} bullets")
             if stats["too_short"] > 0:
-                print(f"   WARNING:  Too short (<110): {stats['too_short']} bullets")
+                logger.warning(f"   WARNING:  Too short (<110): {stats['too_short']} bullets")
 
         # SAFETY CHECK: Prevent empty work_experience when source contains experiences
         if (
@@ -228,16 +232,16 @@ Return ONLY work experiences in this exact format:
                     for bullet_idx, bullet in enumerate(exp["bullets"]):
                         bullet_len = len(bullet)
                         if bullet_len < 100:
-                            print(f"WARNING:  WARNING: Work experience bullet too short (elite standard: 120-145 chars)")
-                            print(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars")
-                            print(f"    Text: {bullet[:80]}...")
-                            print(f"    → This will reduce PFR below elite standards (90%+ requires 120-145 chars)")
+                            logger.warning(f"WARNING:  WARNING: Work experience bullet too short (elite standard: 120-145 chars)")
+                            logger.info(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars")
+                            logger.info(f"    Text: {bullet[:80]}...")
+                            logger.info(f"    → This will reduce PFR below elite standards (90%+ requires 120-145 chars)")
                         elif bullet_len < 110:
-                            print(f"WARNING:  INFO: Bullet below optimal length")
-                            print(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars (optimal: 120-145)")
+                            logger.warning(f"WARNING:  INFO: Bullet below optimal length")
+                            logger.info(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars (optimal: 120-145)")
                         elif bullet_len > 150:
-                            print(f"WARNING:  INFO: Bullet above optimal length (may reduce space for other sections)")
-                            print(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars (optimal: 120-145)")
+                            logger.warning(f"WARNING:  INFO: Bullet above optimal length (may reduce space for other sections)")
+                            logger.info(f"    Experience #{idx+1} ({exp.get('company', 'Unknown')}), Bullet #{bullet_idx+1}: {bullet_len} chars (optimal: 120-145)")
 
         # QUALITY VALIDATION: Check coursework count (elite standard: 5-7 items, NEVER empty for university/prépa)
         if "education" in content:
@@ -251,23 +255,23 @@ Return ONLY work experiences in this exact format:
                 is_prepa = any(keyword in institution or keyword in degree for keyword in ['préparatoire', 'preparatoire', 'prepa', 'lycée saint-louis', 'lycée louis'])
 
                 if (is_university or is_prepa) and coursework_count == 0:
-                    print(f"WARNING:  CRITICAL: Coursework empty for university/prépa (MUST have 4-7 items)")
-                    print(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items")
-                    print(f"    → This is a CRITICAL ERROR - infer coursework from specialty/degree if not in source")
+                    logger.error(f"WARNING:  CRITICAL: Coursework empty for university/prépa (MUST have 4-7 items)")
+                    logger.info(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items")
+                    logger.error(f"    → This is a CRITICAL ERROR - infer coursework from specialty/degree if not in source")
                 elif (is_university or is_prepa) and coursework_count < 4:
-                    print(f"WARNING:  WARNING: Coursework too short for university/prépa")
-                    print(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items (need 5-7)")
+                    logger.warning(f"WARNING:  WARNING: Coursework too short for university/prépa")
+                    logger.info(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items (need 5-7)")
                 elif is_university and coursework_count >= 5:
                     # Good
                     pass
                 elif not is_university and not is_prepa and coursework_count < 5 and coursework_count > 0:
-                    print(f"WARNING:  INFO: High school coursework present but limited")
-                    print(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items (acceptable for high school)")
+                    logger.warning(f"WARNING:  INFO: High school coursework present but limited")
+                    logger.info(f"    Education #{idx+1} ({edu.get('institution', 'Unknown')}): {coursework_count} items (acceptable for high school)")
 
         # QUALITY VALIDATION: Check for empty work_experience when it shouldn't be
         if "raw_text" in input_data and len(content.get("work_experience", [])) == 0:
-            print(f"WARNING:  CRITICAL: work_experience is empty but source may contain work history")
-            print(f"    This will result in PFR < 65% and generation will be blocked")
+            logger.error(f"WARNING:  CRITICAL: work_experience is empty but source may contain work history")
+            logger.info(f"    This will result in PFR < 65% and generation will be blocked")
 
         return content
 
@@ -315,66 +319,53 @@ Return the enhanced data in the same JSON structure."""
         raise ValueError(f"Failed to enhance section: {str(e)}")
 
 
-
-
-async def generate_completion(
-    messages: list,
-    model: str = "gpt-4o-mini",
-    temperature: float = 0.7,
-    max_tokens: int = 1000,
-    top_p: float = 1.0,
-) -> str:
+def extract_structured_cv_data(pdf_bytes: bytes, filename: str = "resume.pdf") -> Dict:
     """
-    Generic LLM completion helper.
-    Used for cover letter, custom prompts, etc.
-    Returns raw text response.
-    """
-    try:
-        response = openai.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-        )
+    Extract structured CV data from PDF bytes.
 
-        return response.choices[0].message.content
+    Args:
+        pdf_bytes: PDF file as bytes
+        filename: Original filename for context
 
-    except Exception as e:
-        raise ValueError(f"LLM completion failed: {str(e)}")
-    
+    Returns:
+        Structured CV data dictionary
 
-
-
-def extract_structured_cv_data(pdf_bytes: bytes) -> Dict:
-    """
-    Generate structured data form PDF using LLM(grader- exact keys)
+    Raises:
+        ValueError: If extraction fails
     """
     try:
-        file_obj = openai.files.create(
-            file=("resume.pdf", pdf_bytes),
-            purpose="user_data",
+        raw_text = extract_text_from_pdf_bytes(pdf_bytes, filename=filename)
+
+        if not raw_text or len(raw_text.strip()) < 50:
+            return {
+                "contact_information": {},
+                "work_experience": [],
+                "education": [],
+                "language_skills": [],
+                "it_skills": [],
+                "activities_interests": [],
+                "certifications": [],
+            }
+
+        structured_data = generate_cv_content(
+            input_data={"raw_text": raw_text},
+            domain="finance",
+            language="fr",
+            enrichment_mode=False,
         )
 
-        prompt = _load_prompt("extract_structured.txt")  
+        if not isinstance(structured_data, dict):
+            raise ValueError("Structured CV extraction did not return a valid dictionary")
 
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "file", "file": {"file_id": file_obj.id}}
-                    ]
-                }
-            ],
-            temperature=0.1,
-            response_format={"type": "json_object"}
-        )
+        structured_data.setdefault("contact_information", {})
+        structured_data.setdefault("work_experience", [])
+        structured_data.setdefault("education", [])
+        structured_data.setdefault("language_skills", [])
+        structured_data.setdefault("it_skills", [])
+        structured_data.setdefault("activities_interests", [])
+        structured_data.setdefault("certifications", [])
 
-        return json.loads(response.choices[0].message.content)
+        return structured_data
 
     except Exception as e:
-        print(f"Structured extraction failed: {e}")
-        return {}
+        raise ValueError(f"Failed to extract structured CV data: {str(e)}")

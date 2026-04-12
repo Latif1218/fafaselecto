@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Letter - {{ name }}</title>
+    <style>
+        /* Page Setup - A4 avec marges aérées */
+        @page {
+            size: A4;
+            margin: 20mm 25mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Times New Roman", Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+            background-color: #fff;
+        }
+
+        /* Date et localisation (top right) */
+        .date-location {
+            font-size: 11pt;
+            margin-bottom: 10mm;
+            text-align: right;
+        }
+
+        /* Destinataire (optionnel) */
+        .recipient {
+            font-size: 11pt;
+            margin-bottom: 8mm;
+            line-height: 1.4;
+        }
+
+        .recipient-company {
+            font-weight: bold;
+        }
+
+        /* Opening formula */
+        .opening {
+            font-size: 11pt;
+            margin-bottom: 6mm;
+        }
+
+        /* Body paragraphs */
+        .body-paragraph {
+            font-size: 11pt;
+            line-height: 1.5;
+            text-align: justify;
+            margin-bottom: 5mm;
+        }
+
+        /* Closing formula */
+        .closing {
+            font-size: 11pt;
+            margin-top: 8mm;
+            margin-bottom: 10mm;
+        }
+
+        /* Signature (bottom right, bold) */
+        .signature {
+            font-size: 11pt;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* Responsive adjustments pour PDF generation */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Date et localisation (top right) -->
+    <div class="date-location">
+        {{ location }}, {{ date }}
+    </div>
+
+    <!-- Opening formula -->
+    <div class="opening">
+        {{ opening }}
+    </div>
+
+    <!-- Body paragraphs -->
+    {% for paragraph in body_paragraphs %}
+    <div class="body-paragraph">
+        {{ paragraph }}
+    </div>
+    {% endfor %}
+
+    <!-- Closing formula -->
+    <div class="closing">
+        {{ closing }}
+    </div>
+
+    <!-- Signature (bottom right, bold, ONCE) -->
+    <div class="signature">
+        {{ name }}
+    </div>
+
+</body>
+</html>

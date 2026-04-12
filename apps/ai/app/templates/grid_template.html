@@ -62,7 +62,7 @@
       height: 1px;
       background: #000;
       border: none;
-      margin: 0 0 1mm 0;
+      margin: 0 0 3.5mm 0;
     }
 
     .section-title {
@@ -77,7 +77,7 @@
     .resume-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 1mm;
+      margin-bottom: 2.5mm;
     }
 
     .resume-table td {
@@ -96,7 +96,7 @@
     .duration {
       font-size: 9pt;
       font-style: italic;
-      margin-top: 1px;
+      margin-top: 0;
       line-height: 1.0;
     }
 
@@ -129,8 +129,8 @@
       font-size: 10pt;
       font-style: italic;
       font-weight: bold;
-      line-height: 0.7;
-      margin-top: 2px;
+      line-height: 1.0;
+      margin-top: 0;
     }
 
     /* EDUCATION DETAILS */
@@ -144,13 +144,26 @@
     .bullets {
       margin: 3.5mm 0 0 4mm;
       padding: 0;
-      list-style-type: disc;
+      list-style-type: "- ";
       font-size: 9.5pt;
       line-height: 1.2;
     }
 
     .bullets li {
       margin-bottom: 1mm;
+    }
+
+    /* ADAPTIVE SPACING FOR LOW PFR (<95%) */
+    .low-pfr .bullets {
+      margin-top: 5mm;  /* Increased from 3.5mm */
+    }
+
+    .low-pfr .bullets li {
+      margin-bottom: 2mm;  /* Increased from 1mm */
+    }
+
+    .low-pfr .section {
+      margin-top: 8mm;  /* Increased from 6.5mm */
     }
 
     /* SKILLS */
@@ -181,7 +194,7 @@
     .skills-list {
       margin: 0 0 0 4mm;
       padding: 0;
-      list-style-type: disc;
+      list-style-type: "- ";
       font-size: 9.5pt;
       line-height: 1.2;
     }
@@ -202,7 +215,7 @@
     .interests-list {
       margin: 0 0 0 4mm;
       padding: 0;
-      list-style-type: disc;
+      list-style-type: "- ";
       font-size: 9.5pt;
       line-height: 1.2;
     }
@@ -229,7 +242,7 @@
 
   <!-- EDUCATION -->
   <div class="section">
-    <div class="section-title">FORMATION</div>
+    <div class="section-title">{% if language == "fr" %}FORMATION{% else %}EDUCATION{% endif %}</div>
     <hr class="hr">
 
     {% for edu in education %}
@@ -255,7 +268,7 @@
           {% endif %}
           {% if edu.coursework and edu.coursework|length %}
           <div class="education-details">
-            Relevant coursework: {{ edu.coursework | join(", ") }}
+            {% if language == "fr" %}Cours principaux{% else %}Relevant coursework{% endif %}: {{ edu.coursework | join(", ") }}
           </div>
           {% endif %}
         </td>
@@ -270,7 +283,7 @@
 
   <!-- WORK EXPERIENCE -->
   <div class="section">
-    <div class="section-title">EXPÉRIENCES PROFESSIONNELLES</div>
+    <div class="section-title">{% if language == "fr" %}EXPÉRIENCES PROFESSIONNELLES{% else %}PROFESSIONAL EXPERIENCE{% endif %}</div>
     <hr class="hr">
 
     {% for exp in experience %}
@@ -306,7 +319,7 @@
 
   <!-- LANGUAGES & IT SKILLS -->
   <div class="section">
-    <div class="section-title">LANGUES & COMPÉTENCES</div>
+    <div class="section-title">{% if language == "fr" %}LANGUES & COMPÉTENCES{% else %}LANGUAGES & SKILLS{% endif %}</div>
     <hr class="hr">
 
     <div class="skills-section">
@@ -334,7 +347,7 @@
   {% if interests %}
   <!-- ACTIVITIES & INTERESTS -->
   <div class="section">
-    <div class="section-title">ACTIVITÉS & CENTRES D'INTÉRÊT</div>
+    <div class="section-title">{% if language == "fr" %}ACTIVITÉS & CENTRES D'INTÉRÊT{% else %}ACTIVITIES & INTERESTS{% endif %}</div>
     <hr class="hr">
 
     <div class="interests-section">

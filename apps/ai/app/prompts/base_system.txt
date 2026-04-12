@@ -297,7 +297,7 @@ Use these terms frequently to signal elite background:
         "company": "COMPANY NAME",
         "location": "City, Country",
         "position": "Job Title",
-        "duration": "X months" (English) or "X mois" (French),
+        "duration": "X months" (English <12 months), "1 year and X months" (12-23 months), "X years and Y months" (≥24 months) OR French: "X mois" (<12), "1 an et X mois" (12-23), "X ans et Y mois" (≥24),
         "bullets": [
             "First bullet 140-165 characters with (parenthetical details, enumeration of 3-4 items, ...) and rich context",
             "Second bullet 140-165 characters with (specific examples, tools, methodologies, ...) and quantified metrics",
@@ -379,6 +379,13 @@ ACTIVITIES:
 WORK EXPERIENCE:
 - [ ] NOT empty if source contains ANY work history
 - [ ] Each experience has 3-4 bullets (premium) or 3 bullets (standard)
+
+DURATION FORMAT (CRITICAL):
+- [ ] <12 months: "X months" (EN) or "X mois" (FR)
+- [ ] 12-23 months: "1 year and X months" (EN) or "1 an et X mois" (FR)
+- [ ] ≥24 months: "X years and Y months" (EN) or "X ans et Y mois" (FR)
+- [ ] NEVER write "45 mois" → ALWAYS "3 ans et 9 mois"
+- [ ] Examples: "30 months" → "2 years and 6 months" or "2 ans et 6 mois"
 
 ═══════════════════════════════════════════════════════════════════════════════
 🎯 REMEMBER: Your goal is 90%+ page fill rate (elite standard)

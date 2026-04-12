@@ -1,0 +1,110 @@
+[INFO] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+[INFO] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+[INFO] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+[INFO] Start to convert C:\Users\Home\Documents\Postulae\Algo CV\cv_enhancer vanthropic\output\examples\cover_letter_fayed_goldman_fr.pdf
+[INFO] [1;36m[1/4] Opening document...[0m
+[INFO] [1;36m[2/4] Analyzing document...[0m
+[INFO] [1;36m[3/4] Parsing pages...[0m
+[INFO] (1/2) Page 1
+[INFO] (2/2) Page 2
+[INFO] [1;36m[4/4] Creating pages...[0m
+[INFO] (1/2) Page 1
+[INFO] (2/2) Page 2
+[INFO] Terminated in 0.21s.
+
+================================================================================
+TEST: Fayed HANAFI - Goldman Sachs Investment Banking Analyst
+================================================================================
+[1/4] Extracting job requirements...
+   Company: Goldman Sachs
+   Position: Investment Banking Analyst
+   Skills: 9 required
+[2/4] Matching CV achievements to job...
+   Matched achievements: 3
+   Matched skills: 2
+[3/4] Generating cover letter in FR...
+      DEBUG: Found 7 paragraphs before deduplication
+        Para 1: Madame, Monsieur,...
+        Para 2: Diplômé de HEC Paris avec une expérience concrète en M&A, je souhaite rejoindre ...
+        Para 3: Lors de mon stage chez Rothschild & Co, j'ai participé à l'exécution d'une opéra...
+        Para 4: En tant que Portfolio Manager du HEC Investment Club, j'ai démontré mes capacité...
+        Para 5: La culture méritocratique de Goldman Sachs et son leadership sur les transaction...
+        Para 6: Je suis disponible pour un entretien à votre convenance et serais ravi de discut...
+        Para 7: Fayed HANAFI...
+      DEBUG: No duplicates found
+      PFR: 107.7% (2100 chars) - critical_long
+      Trimming to 90% PFR...
+      After trim: 107.7% PFR (2100 chars)
+   [OK] FR: 390 words
+[4/4] Translating to EN...
+   [OK] EN: 324 words
+
+[OK] Generation complete!
+   Time: 19.13s
+   Cost: $0.0150
+
+[OK] Generation completed!
+   Time: 19.13s
+   Cost: $0.0150
+   Word count FR: 390
+   Word count EN: 324
+
+[METRICS] Quality metrics:
+   Goldman Sachs mentions (FR): 5×
+   Goldman Sachs mentions (EN): 4×
+
+================================================================================
+COVER LETTER - FRENCH
+================================================================================
+Madame, Monsieur,
+
+Diplômé de HEC Paris avec une expérience concrète en M&A, je souhaite rejoindre Goldman Sachs en tant qu'Investment Banking Analyst au sein de votre division M&A. Ayant contribué à l'exécution d'une transaction pharmaceutique de 450M€ chez Rothschild & Co, je suis attiré par l'excellence analytique de Goldman dans les opérations stratégiques complexes. Ma formation mathématique à Polytechnique, combinée à mon expertise en modélisation financière, me positionne pour contribuer immédiatement à vos équipes deal.
+
+Lors de mon stage chez Rothschild & Co, j'ai participé à l'exécution d'une opération M&A pharmaceutique de 450M€, en réalisant des modélisations financières (DCF, LBO) et des due diligences sur 8 marchés européens. J'ai optimisé le processus d'analyse de comparables, réduisant le temps de préparation de 30%, ce qui a permis aux banquiers seniors d'accélérer les présentations clients. J'ai également préparé des pitch books pour des dirigeants C-suite, contribuant à 3 mandats totalisant 1,2Md€. Cette expérience a renforcé ma rigueur analytique et ma capacité à gérer plusieurs workstreams simultanément.
+
+En tant que Portfolio Manager du HEC Investment Club, j'ai démontré mes capacités de leadership en gérant une équipe de 5 analystes et un portefeuille de 2M€, générant un rendement annualisé de 22% contre 15% pour le CAC 40. En parallèle, comme Président de la HEC Finance Society, j'ai organisé 12 panels sectoriels avec Goldman Sachs, JP Morgan et McKinsey, attirant 500+ participants. Ces expériences ont développé ma capacité à structurer des analyses complexes et à communiquer efficacement avec des audiences variées.
+
+La culture méritocratique de Goldman Sachs et son leadership sur les transactions cross-border stratégiques correspondent à mes aspirations professionnelles. Mes échanges avec vos analystes lors des panels HEC ont confirmé l'alignement entre vos valeurs d'excellence intellectuelle et mon engagement envers la rigueur analytique. Ma maîtrise de trois langues et mon expérience sur 8 marchés européens constituent des atouts pour vos mandats internationaux.
+
+Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+Fayed HANAFI
+
+================================================================================
+COVER LETTER - ENGLISH
+================================================================================
+Dear Hiring Manager,
+
+As a graduate of HEC Paris with hands-on M&A experience, I am eager to join Goldman Sachs as an Investment Banking Analyst in your M&A division. Having contributed to the execution of a €450M pharmaceutical transaction at Rothschild & Co, I am drawn to Goldman's analytical excellence in complex strategic operations. My mathematical background from Polytechnique, combined with my expertise in financial modeling, positions me to contribute immediately to your deal teams.
+
+During my internship at Rothschild & Co, I participated in the execution of a €450M pharmaceutical M&A transaction, performing financial modeling (DCF, LBO) and due diligence across 8 European markets. I optimized the comparable analysis process, reducing preparation time by 30%, which allowed senior bankers to accelerate client presentations. I also prepared pitch books for C-suite executives, contributing to 3 mandates totaling €1.2B. This experience has strengthened my analytical rigor and ability to manage multiple workstreams simultaneously.
+
+As the Portfolio Manager of the HEC Investment Club, I demonstrated my leadership capabilities by managing a team of 5 analysts and a €2M portfolio, generating a 22% annualized return versus 15% for the CAC 40. In parallel, as the President of the HEC Finance Society, I organized 12 industry panels with Goldman Sachs, JP Morgan, and McKinsey, attracting 500+ participants. These experiences have developed my ability to structure complex analyses and communicate effectively with diverse audiences.
+
+Goldman Sachs' meritocratic culture and its leadership in strategic cross-border transactions align with my professional aspirations. My discussions with your analysts during the HEC panels have confirmed the alignment between your values of intellectual excellence and my commitment to analytical rigor. My fluency in three languages and my experience across 8 European markets are assets for your international mandates.
+
+I am available for an interview at your convenience and would welcome the opportunity to discuss how my M&A experience can contribute to the success of Goldman Sachs. Thank you for your consideration.
+
+Sincerely,
+Fayed HANAFI
+
+================================================================================
+GENERATING PDFs
+================================================================================
+      [DEBUG LAYOUT] Opening: Madame, Monsieur,...
+      [DEBUG LAYOUT] Body paragraphs: 5
+      [DEBUG LAYOUT] Closing (253 chars):
+        Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+[OK] FR files generated:
+   PDF: C:\Users\Home\Documents\Postulae\Algo CV\cv_enhancer vanthropic\output\examples\cover_letter_fayed_goldman_fr.pdf
+   Page count: 2
+   Word count: 390
+   DOCX: C:\Users\Home\Documents\Postulae\Algo CV\cv_enhancer vanthropic\output\examples\cover_letter_fayed_goldman_fr.docx
+   [WARN] Warnings:
+      - CRITICAL: Cover letter overflows to 2 pages (MUST be 1 page)
+      - Cover letter long (390 words), may overflow 1 page
+
+[FAIL] TEST FAILED: [FAIL] FR: Page count = 2 (must be 1)

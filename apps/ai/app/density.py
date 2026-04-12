@@ -15,12 +15,12 @@ from .models import PageFillMetrics
 class DensityCalculator:
     """Calculate page fill rate from PDF bytes."""
 
-    # PFR thresholds (Postulae product constraints)
-    BLOCK_THRESHOLD = 40.0                  # Below this: BLOCK generation (nouveau seuil push-to-90)
-    ENRICHMENT_THRESHOLD = 90.0             # 90-95%: Standard enrichment
-    ACCEPTANCE_RANGE = [90.0, 95.0]         # Acceptable PFR range (STRICT: 90-95% only)
-    TRIM_THRESHOLD = 95.0                   # Above this: Trim slightly
-    ENRICHMENT_TARGET = 92.0                # Target when enrichment needed (centre zone optimale 90-95%)
+    # PFR thresholds (Postulae product constraints - UPDATED 12/03/2026 V3)
+    BLOCK_THRESHOLD = 40.0                  # Below this: BLOCK generation
+    ENRICHMENT_THRESHOLD = 90.0             # 90-98%: Target range (realistic with 2-line bullets)
+    ACCEPTANCE_RANGE = [90.0, 98.0]        # Acceptable PFR range (PRODUCTION: 90-98%)
+    TRIM_THRESHOLD = 98.0                  # Above this: Trim (risk of overflow to 2 pages)
+    ENRICHMENT_TARGET = 94.0                # Target when enrichment needed (centre zone optimale 90-98%)
 
     MINIMUM_CHARS = 2200  # Minimum character count
 
@@ -104,7 +104,7 @@ class DensityCalculator:
             metrics: Page fill metrics
 
         Returns:
-            True if acceptable (1 page, 90-97% fill)
+            True if acceptable (1 page, 90-98% fill)
         """
         return (
             metrics.page_count == 1
@@ -115,13 +115,13 @@ class DensityCalculator:
     @classmethod
     def needs_aggressive_enrichment(cls, metrics: PageFillMetrics) -> bool:
         """
-        Check if content needs aggressive enrichment (70-90% range).
+        Check if content needs aggressive enrichment (40-90% range).
 
         Args:
             metrics: Page fill metrics
 
         Returns:
-            True if aggressive enrichment is needed (70% ≤ PFR < 90%)
+            True if aggressive enrichment is needed (40% ≤ PFR < 90%)
         """
         return (
             metrics.page_count == 1
@@ -149,7 +149,7 @@ class DensityCalculator:
     @classmethod
     def needs_trimming(cls, metrics: PageFillMetrics) -> bool:
         """
-        Check if content needs trimming (overflow or > 95%).
+        Check if content needs trimming (overflow or > 98%).
 
         Args:
             metrics: Page fill metrics
@@ -162,13 +162,13 @@ class DensityCalculator:
     @classmethod
     def is_blocked(cls, metrics: PageFillMetrics) -> bool:
         """
-        Check if generation should be blocked (< 70% PFR).
+        Check if generation should be blocked (< 40% PFR).
 
         Args:
             metrics: Page fill metrics
 
         Returns:
-            True if PFR < 70% (blocked)
+            True if PFR < 40% (blocked)
         """
         return (
             metrics.page_count == 1
@@ -190,15 +190,15 @@ class DensityCalculator:
             return f"OVERFLOW: {metrics.page_count} pages. Content must be trimmed."
 
         if cls.is_blocked(metrics):
-            return f"BLOCKED: {metrics.fill_percentage}% fill (< 70%). More content required from user."
+            return f"BLOCKED: {metrics.fill_percentage}% fill (< 40%). More content required from user."
 
         if cls.needs_aggressive_enrichment(metrics):
-            return f"ENRICHMENT REQUIRED: {metrics.fill_percentage}% fill (70-90%). Will enrich to ~92%."
+            return f"ENRICHMENT REQUIRED: {metrics.fill_percentage}% fill (40-90%). Will enrich to ~94%."
 
         if cls.is_acceptable(metrics):
             return f"ACCEPTED: {metrics.fill_percentage}% fill, {metrics.char_count} chars."
 
         if metrics.fill_percentage > cls.TRIM_THRESHOLD:
-            return f"TRIM: {metrics.fill_percentage}% fill (> 95%). Will trim slightly."
+            return f"TRIM: {metrics.fill_percentage}% fill (> 98%). Will trim to avoid overflow."
 
         return f"Status: {metrics.fill_percentage}% fill, {metrics.char_count} chars."

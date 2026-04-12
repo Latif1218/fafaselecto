@@ -43,7 +43,7 @@ Standard Example (both languages at once):
     >>> pdf_en = results["en"].pdf_bytes
 """
 
-from .generator import (
+from apps.ai.app.generator import (
     generate_cv_from_pdf,
     generate_cv_from_data,
     generate_cv_phase1_from_pdf,

@@ -1,5 +1,10 @@
 """
-Layout Engine for Postulae CV Generator.
+LEGACY Layout Engine for Postulae CV Generator (xhtml2pdf).
+
+⚠️ WARNING: This module is LEGACY and should NOT be used in production.
+Use layout_playwright.py instead for production PDF generation.
+
+This file is kept ONLY for backward compatibility if USE_HYBRID_STACK=False.
 
 CRITICAL: This module contains the exact layout logic that produces
 the "Fayed Hanafi" reference CV format. ALL layout rules must be preserved.
@@ -11,6 +16,10 @@ DO NOT:
 - Alter typography hierarchy
 
 This is a PRODUCT CONSTRAINT, not a cosmetic choice.
+
+DEPRECATION WARNING:
+- Use app.layout_playwright for production (Playwright/Chromium)
+- This xhtml2pdf engine has ±5-8% PFR variance vs 0% with Playwright
 """
 import io
 import os
@@ -33,7 +42,7 @@ class LayoutEngine:
     TEMPLATES_DIR = Path(__file__).parent / "templates"
 
     @staticmethod
-    def normalize_cv_data(data: Dict, trim: bool = False) -> Dict:
+    def normalize_cv_data(data: Dict, trim: bool = False, language: str = "fr") -> Dict:
         """
         Normalize CV data to exact template structure.
 
@@ -43,11 +52,13 @@ class LayoutEngine:
         Args:
             data: Raw CV content dictionary
             trim: If True, apply moderate trimming for overflow
+            language: Language for date formatting ("fr" or "en")
 
         Returns:
             Normalized data dictionary ready for template
         """
         template_data = data.copy() if isinstance(data, dict) else {}
+        template_data["language"] = language
 
         # Flatten contact information
         if template_data.get("contact_information"):
@@ -72,11 +83,13 @@ class LayoutEngine:
 
             if edu.get("date"):
                 edu["date"] = LayoutEngine._shorten_date_range(str(edu["date"]))
+                if language == "fr":
+                    edu["date"] = LayoutEngine._convert_date_to_french(edu["date"])
 
-            # Ensure 4-digit years become "Jan YYYY"
+            # Ensure 4-digit years become "Jan YYYY" or "Janv. YYYY" for French
             d = str(edu.get("date", "")).strip()
             if d.isdigit() and len(d) == 4:
-                edu["date"] = f"Jan {d}"
+                edu["date"] = f"Janv. {d}" if language == "fr" else f"Jan {d}"
 
             # Normalize location
             if edu.get("location"):
@@ -91,6 +104,8 @@ class LayoutEngine:
         for exp in template_data.get("experience", []) or []:
             if exp.get("date"):
                 exp["date"] = LayoutEngine._shorten_date_range(str(exp["date"]))
+                if language == "fr":
+                    exp["date"] = LayoutEngine._convert_date_to_french(exp["date"])
             if exp.get("location"):
                 exp["location"] = LayoutEngine._shorten_location(str(exp["location"]))
 
@@ -172,6 +187,35 @@ class LayoutEngine:
         return data
 
     @staticmethod
+    def _convert_date_to_french(text: str) -> str:
+        """
+        Convert English month abbreviations to French in dates.
+        Examples: "Jan 2022" → "Janv. 2022"
+                  "Aug 2023 - Dec 2024" → "Août 2023 - Déc. 2024"
+                  "Jul 2021 -" → "Juil. 2021 -"
+        """
+        en_to_fr = {
+            "Jan": "Janv.",
+            "Feb": "Févr.",
+            "Mar": "Mars",
+            "Apr": "Avr.",
+            "May": "Mai",
+            "Jun": "Juin",
+            "Jul": "Juil.",
+            "Aug": "Août",
+            "Sep": "Sept.",
+            "Oct": "Oct.",
+            "Nov": "Nov.",
+            "Dec": "Déc.",
+        }
+
+        result = text
+        for en, fr in en_to_fr.items():
+            result = re.sub(rf"\b{en}\b", fr, result)
+
+        return result
+
+    @staticmethod
     def _shorten_date_range(text: str) -> str:
         """
         Convert verbose dates to short forms.
@@ -196,7 +240,7 @@ class LayoutEngine:
         t = text.strip()
         t_lower = t.lower()
 
-        # French months → English
+        # French months → English (+ fix common LLM errors like "Auguste")
         fr_to_en = {
             "janvier": "jan",
             "février": "feb",
@@ -208,6 +252,7 @@ class LayoutEngine:
             "juillet": "july",
             "août": "aug",
             "aout": "aug",
+            "auguste": "aug",  # Fix LLM error "Auguste" → "Aug"
             "septembre": "sept",
             "octobre": "oct",
             "novembre": "nov",
@@ -234,19 +279,19 @@ class LayoutEngine:
                 s = re.sub(rf"\b{short.lower()}\b", short, s)
             return s
 
-        # Handle "since" prefix
+        # Handle "since" prefix → convert to "YYYY -"
         m_since = re.match(r"^(since|depuis)\s+(.*)$", t_lower)
         if m_since:
             start = cap_months(m_since.group(2))
             start = re.sub(r"\s*[–—-]\s*", " ", start).strip()
-            return f"Since {start}"
+            return f"{start} -"
 
-        # Handle range ending with "now"
+        # Handle range ending with "now" → convert to "YYYY -"
         m_now = re.match(r"^(.*?)\s*[–—-]\s*now$", t_lower)
         if m_now:
             start = cap_months(m_now.group(1))
             start = re.sub(r"\s*[–—-]\s*", " ", start).strip()
-            return f"Since {start}"
+            return f"{start} -"
 
         t_short = cap_months(t_lower)
         t_short = re.sub(r"\s*[–—]\s*", "-", t_short)
@@ -351,13 +396,14 @@ class LayoutEngine:
         return value
 
     @staticmethod
-    def render_cv_html(data: Dict, trim: bool = False) -> str:
+    def render_cv_html(data: Dict, trim: bool = False, language: str = "fr") -> str:
         """
         Render CV data to HTML using exact Postulae template.
 
         Args:
             data: CV content dictionary
             trim: Apply trimming if True
+            language: Language for rendering ("fr" or "en")
 
         Returns:
             HTML string with exact layout
@@ -366,7 +412,7 @@ class LayoutEngine:
             ValueError: If template rendering fails
         """
         try:
-            normalized_data = LayoutEngine.normalize_cv_data(data, trim=trim)
+            normalized_data = LayoutEngine.normalize_cv_data(data, trim=trim, language=language)
 
             env = Environment(loader=FileSystemLoader(str(LayoutEngine.TEMPLATES_DIR)))
             template = env.get_template("grid_template.html")
@@ -404,16 +450,17 @@ class LayoutEngine:
         return pdf_bytes
 
     @staticmethod
-    def generate_pdf_from_data(data: Dict, trim: bool = False) -> bytes:
+    def generate_pdf_from_data(data: Dict, trim: bool = False, language: str = "fr") -> bytes:
         """
         Generate PDF directly from CV data (convenience method).
 
         Args:
             data: CV content dictionary
             trim: Apply trimming if True
+            language: Language for rendering ("fr" or "en")
 
         Returns:
             PDF bytes
         """
-        html = LayoutEngine.render_cv_html(data, trim=trim)
+        html = LayoutEngine.render_cv_html(data, trim=trim, language=language)
         return LayoutEngine.html_to_pdf(html)

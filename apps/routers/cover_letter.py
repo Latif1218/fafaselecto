@@ -8,17 +8,19 @@ import os
 import io
 import re
 import pdfplumber
+
 from ..database import get_db
 from ..models.users_model import User
 from ..models.cv_model import CV, CoverLetter
 from ..schemas.cover_letter_schema import CoverLetterResponse, CoverLetterWarning
 from ..authentication.users_oauth import get_current_user
 from ..utils.file_storage import save_bytes_file, get_file_url, UPLOAD_BASE
-from apps.ai.app.cover_letter_generator import generate_cover_letter, infer_language_from_cv_data
+
+from apps.ai.app.cover_letter_generator import generate_cover_letter
 from apps.ai.app.job_offer_extractor import extract_job_offer_from_url
 from apps.ai.app.cover_letter_exporter import (
     generate_cover_letter_pdf_bytes,
-    generate_cover_letter_docx_bytes
+    generate_cover_letter_docx_bytes,
 )
 
 router = APIRouter(
@@ -104,27 +106,27 @@ def _extract_name_fallback(text: str) -> str:
     return "Candidate"
 
 
-def _extract_languages_from_text(text: str) -> List[str]:
+def _extract_languages_from_text(text: str) -> List[dict]:
     text_lower = text.lower()
     found = []
 
     language_map = {
-        "english": ["english", "anglais"],
-        "french": ["french", "français", "francais"],
-        "bangla": ["bangla", "bengali"],
-        "arabic": ["arabic", "arabe"],
-        "spanish": ["spanish", "espagnol"],
-        "german": ["german", "allemand"]
+        "English": ["english", "anglais"],
+        "French": ["french", "français", "francais"],
+        "Bangla": ["bangla", "bengali"],
+        "Arabic": ["arabic", "arabe"],
+        "Spanish": ["spanish", "espagnol"],
+        "German": ["german", "allemand"]
     }
 
     for normalized, variants in language_map.items():
         if any(v in text_lower for v in variants):
-            found.append(normalized)
+            found.append({"language": normalized, "level": "Not specified"})
 
     return found
 
 
-def _extract_skills_from_text(text: str) -> List[str]:
+def _extract_skills_from_text(text: str) -> List[dict]:
     known_skills = [
         "Python", "SQL", "Excel", "Power BI", "Tableau", "Java", "C++",
         "Machine Learning", "Data Analysis", "Financial Modeling", "Valuation",
@@ -137,7 +139,7 @@ def _extract_skills_from_text(text: str) -> List[str]:
 
     for skill in known_skills:
         if skill.lower() in text_lower:
-            found.append(skill)
+            found.append({"name": skill, "level": "Not specified"})
 
     return found[:12]
 
@@ -157,10 +159,10 @@ def _extract_work_experience_from_text(raw_text: str) -> List[dict]:
         if date_pattern.search(line):
             if buffer:
                 experiences.append({
-                    "position": buffer[0][:120],
+                    "role": buffer[0][:120],
                     "company": buffer[1][:120] if len(buffer) > 1 else "Company",
                     "date": line[:60],
-                    "bullets": buffer[2:5] if len(buffer) > 2 else []
+                    "responsibilities": buffer[2:5] if len(buffer) > 2 else []
                 })
                 buffer = []
         else:
@@ -189,12 +191,11 @@ def _build_cv_data_from_selected_cv(selected_cv: CV, current_user: User) -> dict
 
     raw_text = _extract_text_from_pdf_bytes_local(pdf_bytes)
 
-    personal_details = {
-        "full_name": getattr(current_user, "full_name", None) or _extract_name_fallback(raw_text),
-        "email": _extract_email(raw_text),
-        "phone_number": _extract_phone(raw_text),
-        "address": ""
-    }
+    contact_information = [
+        {"type": "name", "value": getattr(current_user, "full_name", None) or _extract_name_fallback(raw_text)},
+        {"type": "email", "value": _extract_email(raw_text)},
+        {"type": "phone", "value": _extract_phone(raw_text)},
+    ]
 
     language_skills = _extract_languages_from_text(raw_text)
     it_skills = _extract_skills_from_text(raw_text)
@@ -202,7 +203,7 @@ def _build_cv_data_from_selected_cv(selected_cv: CV, current_user: User) -> dict
     detected_language = _detect_cv_language_from_text(raw_text)
 
     return {
-        "personal_details": personal_details,
+        "contact_information": contact_information,
         "education": [],
         "work_experience": work_experience,
         "language_skills": language_skills,
@@ -255,6 +256,8 @@ async def generate_cover_letter_endpoint(
     job_link: Optional[str] = Form(None),
     cv_id: Optional[UUID] = Form(None),
     title: str = Form("Cover Letter"),
+    additional_notes: Optional[str] = Form(None),
+    generate_both_languages: bool = Form(False),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -281,29 +284,15 @@ async def generate_cover_letter_endpoint(
             )
 
     cv_data = _build_cv_data_from_selected_cv(selected_cv, current_user)
-
-    personal_details = cv_data.get("personal_details") or {}
-    full_name = (
-        personal_details.get("full_name")
-        or personal_details.get("name")
-        or current_user.full_name
-        or "Candidate"
-    )
-
-    resolved_language = (
-        cv_data.get("detected_language")
-        or getattr(selected_cv, "language", None)
-        or infer_language_from_cv_data(cv_data)
-        or "en"
-    )
+    resolved_language = cv_data.get("detected_language") or "en"
 
     try:
-        generation_result = await generate_cover_letter(
+        generation_result = generate_cover_letter(
             cv_data=cv_data,
-            job_description=resolved_job_description,
-            job_link=job_link,
+            job_offer=resolved_job_description,
+            additional_notes=additional_notes,
             language=resolved_language,
-            user_name=full_name
+            generate_both_languages=generate_both_languages
         )
     except Exception as e:
         logger.exception("Cover letter generation failed")
@@ -312,15 +301,27 @@ async def generate_cover_letter_endpoint(
             detail=f"Cover letter generation failed: {str(e)}"
         )
 
-    content = generation_result["content"]
-    company_name = generation_result.get("company_name")
-    position_title = generation_result.get("position_title")
-    warnings = generation_result.get("warnings", [])
-    language = generation_result["language"]
+    job_requirements = generation_result.get("job_requirements") or {}
+    warnings = []
+
+    primary_content = (
+        generation_result.get("cover_letter_fr")
+        if resolved_language == "fr"
+        else generation_result.get("cover_letter_en")
+    )
+
+    if not primary_content:
+        primary_content = generation_result.get("cover_letter_fr") or generation_result.get("cover_letter_en")
+
+    if not primary_content:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Generated cover letter content is empty."
+        )
 
     try:
-        pdf_bytes = generate_cover_letter_pdf_bytes(content)
-        docx_bytes = generate_cover_letter_docx_bytes(content)
+        pdf_bytes = generate_cover_letter_pdf_bytes(primary_content)
+        docx_bytes = generate_cover_letter_docx_bytes(primary_content)
     except Exception as e:
         logger.exception("Cover letter export generation failed")
         raise HTTPException(
@@ -348,10 +349,10 @@ async def generate_cover_letter_endpoint(
         title=title,
         job_description=resolved_job_description,
         job_link=job_link,
-        company_name=company_name,
-        position_title=position_title,
-        content=content,
-        language=language,
+        company_name=job_requirements.get("company_name"),
+        position_title=job_requirements.get("position"),
+        content=primary_content,
+        language=resolved_language,
         pdf_path=pdf_path,
         docx_path=docx_path,
         warnings=warnings

@@ -1,0 +1,67 @@
+[INFO] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+[INFO] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+================================================================================
+STEP 1: Generate cover letter
+================================================================================
+[1/4] Extracting job requirements...
+   Company: Goldman Sachs
+   Position: Investment Banking Analyst
+   Skills: 9 required
+[2/4] Matching CV achievements to job...
+   Matched achievements: 3
+   Matched skills: 2
+[3/4] Generating cover letter in FR...
+      PFR: 101.4% (1978 chars) - critical_long
+      Trimming to 90% PFR...
+      After trim: 101.4% PFR (1978 chars)
+   [OK] FR: 377 words
+
+[OK] Generation complete!
+   Time: 16.27s
+   Cost: $0.0147
+
+Generated text has 2 occurrences of 'Je suis disponible'
+
+================================================================================
+STEP 2: Parse cover letter
+================================================================================
+      [DEBUG LAYOUT] Opening: Madame, Monsieur,...
+      [DEBUG LAYOUT] Body paragraphs: 6
+      [DEBUG LAYOUT] Closing (253 chars):
+        Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+Opening: Madame, Monsieur,
+Body paragraphs: 6
+  1. Diplômé de HEC Paris avec une expérience concrète en M&A, je... 
+  2. Lors de mon stage chez Rothschild & Co, j'ai contribué à l'e... 
+  3. En tant que Portfolio Manager du HEC Investment Club, j'ai d... 
+  4. La culture méritocratique de Goldman Sachs et son programme ... 
+  5. Fayed HANAFI... 
+  6. Je suis disponible pour un entretien à votre convenance et s... [HAS "Je suis disponible"]
+
+Closing (253 chars): Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+Closing has 1 occurrences of 'Je suis disponible'
+
+================================================================================
+STEP 3: Generate PDF
+================================================================================
+      [DEBUG LAYOUT] Opening: Madame, Monsieur,...
+      [DEBUG LAYOUT] Body paragraphs: 6
+      [DEBUG LAYOUT] Closing (253 chars):
+        Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière dont mon expérience en M&A peut contribuer au succès de Goldman Sachs. Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+PDF generated: output/trace_test\trace_duplication_fr.pdf
+
+================================================================================
+STEP 4: Check PDF content
+================================================================================
+
+PDF has 2 occurrences of 'Je suis disponible'
+
+[FAIL] DUPLICATION IN PDF!
+
+  Occurrence at line 27:
+    Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière don
+
+  Occurrence at line 30:
+    Je suis disponible pour un entretien à votre convenance et serais ravi de discuter de la manière don

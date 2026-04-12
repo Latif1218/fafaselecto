@@ -1,3 +1,7 @@
+
+from .logger import get_logger
+logger = get_logger(__name__)
+
 """
 Intelligent bullet trimming to reach optimal length (135-155 chars).
 Trims bullets > 170 chars to ~155 chars at natural break points.
@@ -80,19 +84,19 @@ def trim_cv_bullets(cv_content: dict) -> dict:
 
                 if len(trimmed_b) < original_len:
                     trimmed_count += 1
-                    print(f"[TRIMMING] {original_len} -> {len(trimmed_b)} chars (-{original_len - len(trimmed_b)})")
-                    print(f"   Before: {b[:80]}...")
-                    print(f"   After:  {trimmed_b[:80]}...")
+                    logger.info("{original_len} -> {len(trimmed_b)} chars (-{original_len - len(trimmed_b)})", extra={"tag": "TRIMMING"})
+                    logger.info(f"   Before: {b[:80]}...")
+                    logger.info(f"   After:  {trimmed_b[:80]}...")
 
             exp["bullets"] = new_bullets
 
     if trimmed_count > 0:
         avg_before = total_chars_before / total_bullets if total_bullets > 0 else 0
         avg_after = total_chars_after / total_bullets if total_bullets > 0 else 0
-        print(f"\n[TRIMMING SUMMARY]")
-        print(f"   Trimmed: {trimmed_count}/{total_bullets} bullets")
-        print(f"   Avg length: {avg_before:.1f} -> {avg_after:.1f} chars")
-        print(f"   Total reduction: {total_chars_before - total_chars_after} chars")
+        logger.info(f"\n[TRIMMING SUMMARY]")
+        logger.info(f"   Trimmed: {trimmed_count}/{total_bullets} bullets")
+        logger.info(f"   Avg length: {avg_before:.1f} -> {avg_after:.1f} chars")
+        logger.info(f"   Total reduction: {total_chars_before - total_chars_after} chars")
 
     return cv_content
 
