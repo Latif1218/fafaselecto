@@ -113,10 +113,6 @@ def _extract_languages_from_text(text: str) -> List[dict]:
     language_map = {
         "English": ["english", "anglais"],
         "French": ["french", "français", "francais"],
-        "Bangla": ["bangla", "bengali"],
-        "Arabic": ["arabic", "arabe"],
-        "Spanish": ["spanish", "espagnol"],
-        "German": ["german", "allemand"]
     }
 
     for normalized, variants in language_map.items():
