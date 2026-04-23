@@ -34,8 +34,8 @@ anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 # Model identifiers (latest available with current API key)
 # NOTE: API key has access to Claude 4.5 (better than 3.5!)
 MODEL_SONNET = "claude-sonnet-4-5-20250929"  # Claude Sonnet 4.5 (most intelligent)
-MODEL_HAIKU = "claude-3-haiku-20240307"      # Claude 3 Haiku (fast, cheap)
-
+# MODEL_HAIKU = "claude-3-haiku-20240307"      # Claude 3 Haiku (fast, cheap)
+MODEL_HAIKU = "claude-haiku-4-5"      # Claude 3 Haiku (fast, cheap)
 
 def generate_cv_content_claude(
     input_data: Dict,
