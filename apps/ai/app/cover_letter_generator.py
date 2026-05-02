@@ -56,7 +56,7 @@ anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # Model identifiers
 MODEL_SONNET = "claude-sonnet-4-5-20250929"  # Generation (best constraints)
-MODEL_HAIKU = "claude-3-haiku-20240307"      # Extraction + Translation (fast + cheap)
+MODEL_HAIKU = "claude-haiku-4-5-20251001"      # Extraction + Translation (fast + cheap)
 
 # Load prompts
 PROMPTS_DIR = Path(__file__).parent / "prompts"

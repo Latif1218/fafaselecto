@@ -55,7 +55,7 @@ class User(Base):
     cvs = relationship("CV", back_populates="user", cascade="all, delete")
     cv_forms = relationship("CVForm", back_populates="user", cascade="all, delete")
     cover_letters = relationship("CoverLetter", back_populates="user", cascade="all, delete")
-    reset_code = relationship("PasswordResetCode", back_populates="user")
+    reset_code = relationship("PasswordResetCode", back_populates="user")    
     subscription = relationship("Subscription", back_populates="user", uselist=False)
     ultimate_requests = relationship(
         "UltimateRequest",
