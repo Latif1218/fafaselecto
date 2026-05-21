@@ -47,4 +47,6 @@ groq_client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
 )
 
+GOOGLE_API_KEY_MAP = os.getenv("GOOGLE_API_KEY_MAP")
+
 EMAIL_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
