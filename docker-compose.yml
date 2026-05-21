@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app:
+    image: mdsumon12ir/postulae:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    restart: always
