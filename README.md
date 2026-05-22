@@ -238,8 +238,6 @@ git push origin main → GitHub Actions → Docker Hub → VPS 🚀
 | GET | `/admin/users` | Admin: list users |
 | GET | `/admin/tutors` | Admin: list tutors |
 
-Full API documentation available at `/docs` (Swagger UI).
-🔗 **API Docs:** [https://postulae.com/docs](http://69.62.72.197:8080/docs) 
 ---
 
 ## 🌍 Supported Languages
